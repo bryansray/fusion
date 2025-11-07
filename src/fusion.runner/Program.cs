@@ -1,45 +1,77 @@
 using Discord;
+using Discord.Interactions;
 using Discord.WebSocket;
 using Fusion.Runner;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
-var host = Host.CreateDefaultBuilder(args)
-    .ConfigureAppConfiguration((context, config) =>
-    {
-        config.SetBasePath(AppContext.BaseDirectory);
-        config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-        config.AddUserSecrets<Program>(optional: true);
-    })
-    .ConfigureServices((context, services) =>
-    {
-        services.Configure<DiscordOptions>(context.Configuration.GetSection("Discord"));
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 
-        services.AddSingleton(provider =>
+try
+{
+    Log.Information("Starting Fusion Discord bot...");
+
+    var host = Host.CreateDefaultBuilder(args)
+        .ConfigureAppConfiguration((context, config) =>
         {
-            var config = new DiscordSocketConfig
+            config.SetBasePath(AppContext.BaseDirectory);
+            config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            config.AddUserSecrets<Program>(optional: true);
+        })
+        .UseSerilog((context, services, loggerConfiguration) =>
+        {
+            loggerConfiguration
+                .ReadFrom.Configuration(context.Configuration)
+                .ReadFrom.Services(services)
+                .Enrich.FromLogContext()
+                .WriteTo.Console();
+        })
+        .ConfigureServices((context, services) =>
+        {
+            services.Configure<DiscordOptions>(context.Configuration.GetSection("Discord"));
+
+            services.AddSingleton(provider =>
             {
-                GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent
-            };
+                var config = new DiscordSocketConfig
+                {
+                    GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent
+                };
 
-            return new DiscordSocketClient(config);
-        });
+                return new DiscordSocketClient(config);
+            });
 
-        services.AddHostedService<DiscordBotHostedService>();
-    })
-    .ConfigureLogging(logging =>
-    {
-        logging.ClearProviders();
-        logging.AddSimpleConsole(options =>
-        {
-            options.SingleLine = true;
-            options.TimestampFormat = "HH:mm:ss ";
-        });
-    })
-    .Build();
+            services.AddSingleton(provider =>
+            {
+                var socketClient = provider.GetRequiredService<DiscordSocketClient>();
+                var config = new InteractionServiceConfig
+                {
+                    LogLevel = LogSeverity.Info,
+                    UseCompiledLambda = true
+                };
 
-await host.RunAsync();
+                return new InteractionService(socketClient, config);
+            });
+
+            services.AddSingleton<SlashCommandService>();
+            services.AddHostedService<DiscordBotHostedService>();
+        })
+        .Build();
+
+    await host.RunAsync();
+}
+catch (Exception exception)
+{
+    Log.Fatal(exception, "Fusion Discord bot terminated unexpectedly.");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
 
 public partial class Program;

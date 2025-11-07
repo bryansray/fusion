@@ -12,16 +12,19 @@ public sealed class DiscordBotHostedService : IHostedService
     private readonly ILogger<DiscordBotHostedService> _logger;
     private readonly DiscordOptions _options;
     private readonly ulong? _guildId;
+    private readonly SlashCommandService _slashCommandService;
     private bool _isStarted;
 
     public DiscordBotHostedService(
         DiscordSocketClient client,
         IOptions<DiscordOptions> options,
+        SlashCommandService slashCommandService,
         ILogger<DiscordBotHostedService> logger)
     {
         _client = client;
         _logger = logger;
         _options = options.Value;
+        _slashCommandService = slashCommandService;
 
         if (!string.IsNullOrWhiteSpace(_options.GuildId))
         {
@@ -50,6 +53,8 @@ public sealed class DiscordBotHostedService : IHostedService
 
         _client.Log += HandleLogAsync;
         _client.Ready += HandleReadyAsync;
+
+        await _slashCommandService.InitializeAsync();
 
         _logger.LogInformation("Starting Discord client...");
 

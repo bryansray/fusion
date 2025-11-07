@@ -2,9 +2,12 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Fusion.Runner;
+using Fusion.Runner.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -35,6 +38,7 @@ try
         .ConfigureServices((context, services) =>
         {
             services.Configure<DiscordOptions>(context.Configuration.GetSection("Discord"));
+            services.Configure<MongoOptions>(context.Configuration.GetSection(MongoOptions.SectionName));
 
             services.AddSingleton(provider =>
             {
@@ -57,6 +61,20 @@ try
 
                 return new InteractionService(socketClient, config);
             });
+
+            services.AddSingleton<IMongoClient>(provider =>
+            {
+                var options = provider.GetRequiredService<IOptions<MongoOptions>>().Value;
+                if (string.IsNullOrWhiteSpace(options.ConnectionString))
+                {
+                    throw new InvalidOperationException(
+                        "Set the Mongo connection string via 'Mongo:ConnectionString' configuration.");
+                }
+
+                return new MongoClient(options.ConnectionString);
+            });
+
+            services.AddSingleton<IQuoteRepository, MongoQuoteRepository>();
 
             services.AddSingleton<SlashCommandService>();
             services.AddHostedService<DiscordBotHostedService>();

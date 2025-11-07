@@ -19,6 +19,7 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     Log.Information("Starting Fusion Discord bot...");
+    MongoConfiguration.Configure();
 
     var host = Host.CreateDefaultBuilder(args)
         .ConfigureAppConfiguration((context, config) =>

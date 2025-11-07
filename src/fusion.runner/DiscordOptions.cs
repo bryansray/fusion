@@ -4,9 +4,9 @@ public sealed class DiscordOptions
 {
     public string? Token { get; set; }
 
-    public int GuildId { get; init; }
+    public string? ClientId { get; set; }
 
-    public int ClientId { get; init; }
+    public string? GuildId { get; set; }
 
     public string? Status { get; set; }
 }

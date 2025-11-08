@@ -21,6 +21,9 @@ public sealed class MongoIndexInitializer : IHostedService
         ILogger<MongoIndexInitializer> logger)
     {
         _logger = logger;
+        ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(options);
+
         var mongoOptions = options.Value;
 
         if (string.IsNullOrWhiteSpace(mongoOptions.DatabaseName))
@@ -60,6 +63,7 @@ public sealed class MongoIndexInitializer : IHostedService
             })
         };
 
+#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
             var result = await _collection.Indexes.CreateManyAsync(models, cancellationToken).ConfigureAwait(false);
@@ -69,6 +73,7 @@ public sealed class MongoIndexInitializer : IHostedService
         {
             _logger.LogError(exception, "Failed to ensure Mongo indexes for quotes collection.");
         }
+#pragma warning restore CA1031 // Do not catch general exception types
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;

@@ -12,7 +12,9 @@ public sealed class QuoteAddRequest([Summary("person", "The person who said the 
 
     public string Message { get; init; } = message;
 
+#pragma warning disable CA1721 // Property names should not match get methods
     public string? Tags { get; init; } = tags;
+#pragma warning restore CA1721 // Property names should not match get methods
 
     public bool Nsfw { get; init; } = nsfw;
 

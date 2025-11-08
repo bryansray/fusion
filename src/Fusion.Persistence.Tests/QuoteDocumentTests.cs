@@ -4,12 +4,12 @@ using Xunit;
 
 namespace Fusion.Persistence.Tests;
 
-internal sealed class QuoteDocumentTests
+public sealed class QuoteDocumentTests
 {
     private static readonly Faker Faker = new();
 
     [Fact]
-    public void Constructor_generates_short_id()
+    public void ConstructorGeneratesShortId()
     {
         var document = new QuoteDocument
         {

@@ -93,7 +93,7 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
             }
             else
             {
-                var fallback = fuzzyMatches.First();
+                var fallback = fuzzyMatches[0];
                 await _repository.IncrementUsesAsync(fallback.ShortId).ConfigureAwait(false);
                 response = $"Quote `{normalized}` not found. Showing closest match:`\n`" + FormatQuoteResponse(fallback);
             }
@@ -288,7 +288,9 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
             return "unknown";
         }
 
+#pragma warning disable CA1308 // Normalize strings to uppercase
         var normalized = person.Trim().ToLowerInvariant();
+#pragma warning restore CA1308 // Normalize strings to uppercase
         normalized = Regex.Replace(normalized, "[^a-z0-9]+", "-");
         normalized = normalized.Trim('-');
 

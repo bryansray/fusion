@@ -23,6 +23,9 @@ public sealed class MongoQuoteRepository : IQuoteRepository
     {
         _logger = logger;
 
+        ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(options);
+
         var mongoOptions = options.Value;
 
         if (string.IsNullOrWhiteSpace(mongoOptions.ConnectionString))
@@ -46,6 +49,7 @@ public sealed class MongoQuoteRepository : IQuoteRepository
 
     public async Task InsertAsync(QuoteDocument quote, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(quote);
         await _collection.InsertOneAsync(quote, cancellationToken: cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Quote from {Author} persisted to MongoDB.", quote.Person);
     }
@@ -62,7 +66,7 @@ public sealed class MongoQuoteRepository : IQuoteRepository
 
     public async Task<QuoteDocument?> GetByShortIdAsync(string shortId, CancellationToken cancellationToken = default)
     {
-        var normalized = shortId.Trim().ToUpperInvariant();
+        var normalized = shortId?.Trim().ToUpperInvariant() ?? string.Empty;
         var filter = Builders<QuoteDocument>.Filter.And(
             Builders<QuoteDocument>.Filter.Eq(q => q.ShortId, normalized),
             Builders<QuoteDocument>.Filter.Eq(q => q.DeletedAt, null));

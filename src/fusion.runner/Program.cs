@@ -17,6 +17,7 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateBootstrapLogger();
 
+#pragma warning disable CA1031 // Do not catch general exception types
 try
 {
     Log.Information("Starting Fusion Discord bot...");
@@ -92,7 +93,8 @@ catch (Exception exception)
 }
 finally
 {
-    Log.CloseAndFlush();
+    await Log.CloseAndFlushAsync().ConfigureAwait(false);
 }
+#pragma warning restore CA1031 // Do not catch general exception types
 
 internal partial class Program;

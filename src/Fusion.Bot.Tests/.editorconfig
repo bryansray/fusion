@@ -1,0 +1,7 @@
+# Top-level .editorconfig
+root = true
+
+# Apply to all C# files
+[*.cs]
+dotnet_diagnostic.CA1812.severity = none
+dotnet_diagnostic.CA1822.severity = none

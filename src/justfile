@@ -1,0 +1,29 @@
+set shell := ["/bin/bash", "-cu"]
+
+# Build all projects
+build:
+	dotnet build fusion.sln
+
+# Run analyzers/formatting
+lint:
+	dotnet format fusion.sln
+
+# Run every test project, skipping integration category
+test:
+	dotnet test fusion.sln --filter "TestCategory!=Integration"
+
+# Run full test suite (including integration)
+test-full:
+	dotnet test fusion.sln
+
+# Run only the bot tests
+bot-tests:
+	dotnet test Fusion.Bot.Tests/Fusion.Bot.Tests.csproj
+
+# Run only the persistence tests
+persistence-tests:
+	dotnet test Fusion.Persistence.Tests/Fusion.Persistence.Tests.csproj
+
+# Run the Discord runner
+run:
+	dotnet run --project fusion.runner/fusion.runner.csproj

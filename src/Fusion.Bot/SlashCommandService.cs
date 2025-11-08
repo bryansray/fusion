@@ -80,6 +80,7 @@ public sealed class SlashCommandService
 
     private async Task HandleInteractionAsync(SocketInteraction interaction)
     {
+#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
             var context = new SocketInteractionContext(_client, interaction);
@@ -105,6 +106,7 @@ public sealed class SlashCommandService
                     ephemeral: true).ConfigureAwait(false);
             }
         }
+#pragma warning restore CA1031 // Do not catch general exception types
     }
 
     private Task HandleLogAsync(LogMessage message)

@@ -7,4 +7,8 @@ public interface IQuoteRepository
     Task InsertAsync(QuoteDocument quote, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<QuoteDocument>> FindByAuthorAsync(string author, CancellationToken cancellationToken = default);
+
+    Task<QuoteDocument?> GetByShortIdAsync(string shortId, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<QuoteDocument>> GetFuzzyShortIdAsync(string shortIdPrefix, CancellationToken cancellationToken = default);
 }

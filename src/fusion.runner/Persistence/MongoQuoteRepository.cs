@@ -1,6 +1,11 @@
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using Fusion.Runner.Persistence.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Fusion.Runner.Persistence;
@@ -48,7 +53,30 @@ public sealed class MongoQuoteRepository : IQuoteRepository
         string author,
         CancellationToken cancellationToken = default)
     {
-        var filter = Builders<QuoteDocument>.Filter.Eq(q => q.Person, author);
+        var filter = Builders<QuoteDocument>.Filter.Eq(q => q.PersonKey, author);
+        return await _collection.Find(filter).ToListAsync(cancellationToken);
+    }
+
+    public async Task<QuoteDocument?> GetByShortIdAsync(string shortId, CancellationToken cancellationToken = default)
+    {
+        var normalized = shortId.Trim().ToUpperInvariant();
+        var filter = Builders<QuoteDocument>.Filter.Eq(q => q.ShortId, normalized);
+        return await _collection.Find(filter).FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<QuoteDocument>> GetFuzzyShortIdAsync(
+        string shortIdPrefix,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(shortIdPrefix))
+        {
+            return Array.Empty<QuoteDocument>();
+        }
+
+        var normalized = shortIdPrefix.Trim().ToUpperInvariant();
+        var pattern = $"^{Regex.Escape(normalized)}";
+        var filter = Builders<QuoteDocument>.Filter.Regex(q => q.ShortId, new BsonRegularExpression(pattern));
+
         return await _collection.Find(filter).ToListAsync(cancellationToken);
     }
 }

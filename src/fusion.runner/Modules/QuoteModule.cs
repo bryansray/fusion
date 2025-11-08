@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using Discord;
 using Discord.Interactions;
@@ -63,6 +66,27 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
             ephemeral: true);
     }
 
+    [SlashCommand("find", "Find a quote by its short id.")]
+    public async Task FindQuoteAsync([Summary("id", "The short id generated when the quote was added.")] string shortId)
+    {
+        if (string.IsNullOrWhiteSpace(shortId))
+        {
+            await RespondAsync("Please provide the quote id you want to look up.", ephemeral: true);
+            return;
+        }
+
+        var normalized = shortId.Trim().ToUpperInvariant();
+        var quotes = await _repository.GetFuzzyShortIdAsync(normalized);
+
+        if (quotes.Count == 0)
+        {
+            await RespondAsync($"No quotes found matching id prefix `{normalized}`.", ephemeral: true);
+            return;
+        }
+
+        await RespondAsync(FormatQuoteResponse(quotes.First()));
+    }
+
     private IReadOnlyList<MentionedUser> ResolveMentionedUsers(string message)
     {
         if (string.IsNullOrWhiteSpace(message))
@@ -104,6 +128,34 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
             .GroupBy(u => u.UserId)
             .Select(g => g.First())
             .ToArray();
+    }
+
+    private static string FormatQuoteResponse(QuoteDocument quote)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine($"**{quote.Person}** said:");
+        builder.AppendLine($"> {quote.Message}");
+        builder.AppendLine();
+
+        builder.AppendLine($"Short Id: `{quote.ShortId}` | NSFW: {(quote.Nsfw ? "Yes" : "No")}");
+        builder.AppendLine($"Added by: <@{quote.AddedBy}> on {quote.AddedAt:yyyy-MM-dd HH:mm} UTC");
+
+        var tags = quote.Tags.Count > 0 ? string.Join(", ", quote.Tags) : "None";
+        builder.AppendLine($"Tags: {tags}");
+
+        var mentions = quote.MentionedUsers.Count > 0
+            ? string.Join(", ", quote.MentionedUsers.Select(m => $"<@{m.UserId}> ({m.DisplayName})"))
+            : "None";
+        builder.AppendLine($"Mentions: {mentions}");
+
+        builder.AppendLine($"Uses: {quote.Uses} | Likes: {quote.Likes}");
+
+        if (quote.DeletedAt is not null)
+        {
+            builder.AppendLine($"Deleted: {quote.DeletedAt:yyyy-MM-dd HH:mm} UTC by <@{quote.DeletedBy}>");
+        }
+
+        return builder.ToString();
     }
 
     private static string NormalizePersonKey(string person)

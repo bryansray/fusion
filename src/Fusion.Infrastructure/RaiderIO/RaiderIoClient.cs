@@ -109,7 +109,7 @@ public sealed class RaiderIoClient : IRaiderIoClient
 
         if (!string.IsNullOrWhiteSpace(fields))
         {
-            builder.Query += $"&fields={Encode(fields)}";
+            builder.Query += $"&fields={fields}";
         }
 
         return builder.Uri;

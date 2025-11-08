@@ -28,8 +28,20 @@ public sealed record RaiderIoCharacterProfile
     [JsonPropertyName("mythic_plus_ranks")]
     public MythicPlusRanks? MythicPlusRanks { get; init; }
 
+    [JsonPropertyName("mythic_plus_scores_by_season")]
+    public IReadOnlyCollection<MythicPlusScoresBySeason> MythicPlusScoresBySeason { get; init; } = [];
+
     [JsonPropertyName("last_crawled_at")]
     public DateTimeOffset? LastCrawledAt { get; init; }
+}
+
+public sealed record MythicPlusScoresBySeason
+{
+    [JsonPropertyName("season")]
+    public string Season { get; init; } = string.Empty;
+
+    [JsonPropertyName("scores")]
+    public IReadOnlyDictionary<string, float> Scores { get; init; } = new Dictionary<string, float>();
 }
 
 public sealed record CharacterGear

@@ -5,8 +5,8 @@ using System.Text.RegularExpressions;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using Fusion.Runner.Persistence;
-using Fusion.Runner.Persistence.Models;
+using Fusion.Persistence;
+using Fusion.Persistence.Models;
 using Microsoft.Extensions.Logging;
 
 namespace Fusion.Runner.Modules;

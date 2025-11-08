@@ -24,4 +24,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../Fusion.Persistence/Fusion.Persistence.csproj" />
+  </ItemGroup>
+
 </Project>

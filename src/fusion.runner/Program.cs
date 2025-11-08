@@ -1,8 +1,8 @@
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using Fusion.Persistence;
 using Fusion.Runner;
-using Fusion.Runner.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

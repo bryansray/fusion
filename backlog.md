@@ -1,10 +1,11 @@
+# Quote Management System
 - [x] Harden quote retrieval (increment `Uses` on lookups, add atomic repository method)
 - [ ] Add quote moderation commands
   - [x] `/quote delete` (soft delete, permissions enforced)
   - [x] `/quote restore`
   - [ ] Role-based configuration/perms (beyond initial ManageMessages check)
   - [x] Hide deleted quotes in lookups/search
-- [ ] Create MongoDB indexes for quote queries (`ShortId`, `PersonKey`, `Tags`, soft-delete compound index)
+- [x] Create MongoDB indexes for quote queries (`ShortId`, `PersonKey`, `Tags`, soft-delete indicator)
 - [ ] Improve UX with embeds and buttons for `/quote find` (display tags, mentions, like/resurface actions)
 - [ ] Bootstrap `fusion.runner.Tests` with coverage for quote helpers and repository logic
 - [ ] Add Dockerfile / CI workflow for build + test automation

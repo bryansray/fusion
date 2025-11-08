@@ -58,7 +58,7 @@ public sealed class WarcraftClient : IWarcraftClient, IDisposable
         string character,
         CancellationToken cancellationToken = default)
     {
-        var regionCode = NormalizeRegion(region);
+        var regionCode = BlizzardRegions.Normalize(region);
         var token = await GetAccessTokenAsync(regionCode, cancellationToken).ConfigureAwait(false);
         var locale = string.IsNullOrWhiteSpace(_options.Locale) ? "en_US" : _options.Locale.Trim();
         var namespaceValue = $"profile-{regionCode}";
@@ -163,19 +163,6 @@ public sealed class WarcraftClient : IWarcraftClient, IDisposable
         {
             _tokenSemaphore.Release();
         }
-    }
-
-    private static string NormalizeRegion(string? region)
-    {
-        if (string.IsNullOrWhiteSpace(region))
-        {
-            return "us";
-        }
-
-#pragma warning disable CA1308 // Normalize strings to uppercase
-        var trimmed = region.Trim().ToLowerInvariant();
-#pragma warning restore CA1308 // Normalize strings to uppercase
-        return trimmed is "us" or "eu" or "kr" or "tw" or "cn" ? trimmed : "us";
     }
 
     private static string Slugify(string value)

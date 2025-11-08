@@ -7,7 +7,7 @@ public sealed class WarcraftOptions
     /// <summary>
     /// Default API region (us, eu, kr, tw). Defaults to us.
     /// </summary>
-    public string Region { get; set; } = "us";
+    public string Region { get; set; } = BlizzardRegions.Us;
 
     /// <summary>
     /// Locale used when querying Blizzard APIs (e.g., en_US).

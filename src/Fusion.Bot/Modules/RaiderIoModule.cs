@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using Discord;
@@ -12,6 +13,23 @@ namespace Fusion.Bot.Modules;
 [Group("raiderio", "Raider.IO utilities.")]
 public sealed class RaiderIoModule : InteractionModuleBase<SocketInteractionContext>
 {
+    private static readonly IReadOnlyDictionary<string, Color> ClassColors = new Dictionary<string, Color>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Death Knight"] = new Color(0xC4, 0x1F, 0x3B),
+        ["Demon Hunter"] = new Color(0xA3, 0x30, 0xC9),
+        ["Druid"] = new Color(0xFF, 0x7D, 0x0A),
+        ["Evoker"] = new Color(0x33, 0x93, 0x7F),
+        ["Hunter"] = new Color(0xAB, 0xD4, 0x73),
+        ["Mage"] = new Color(0x3F, 0xC7, 0xEB),
+        ["Monk"] = new Color(0x00, 0xFF, 0x96),
+        ["Paladin"] = new Color(0xF4, 0x8C, 0xBA),
+        ["Priest"] = new Color(0xFF, 0xFF, 0xFF),
+        ["Rogue"] = new Color(0xFF, 0xF5, 0x69),
+        ["Shaman"] = new Color(0x00, 0x70, 0xDE),
+        ["Warlock"] = new Color(0x87, 0x87, 0xED),
+        ["Warrior"] = new Color(0xC7, 0x9C, 0x6E)
+    };
+
     private readonly ILogger<RaiderIoModule> _logger;
     private readonly IRaiderIoClient _client;
 
@@ -93,7 +111,7 @@ public sealed class RaiderIoModule : InteractionModuleBase<SocketInteractionCont
         var embed = new EmbedBuilder()
             .WithTitle(profile.Name)
             .WithDescription(builder.ToString())
-            .WithColor(Color.DarkBlue)
+            .WithColor(GetClassColor(profile.Class))
             .WithUrl(BuildProfileUrl(profile))
             .AddField("Realm", $"{profile.Realm} ({profile.Region.ToUpperInvariant()})", inline: true);
 
@@ -162,5 +180,15 @@ public sealed class RaiderIoModule : InteractionModuleBase<SocketInteractionCont
 #pragma warning restore CA1308 // Normalize strings to uppercase
         normalized = Regex.Replace(normalized, "[^a-z0-9-]", string.Empty);
         return normalized;
+    }
+
+    private static Color GetClassColor(string className)
+    {
+        if (ClassColors.TryGetValue(className, out var color))
+        {
+            return color;
+        }
+
+        return Color.DarkBlue;
     }
 }

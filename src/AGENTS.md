@@ -25,10 +25,18 @@
 - Execute `dotnet test` locally before opening a pull request and ensure new features include failing-first tests when practical.
 
 ## Commit & Pull Request Guidelines
-- Write Conventional Commit messages (`feat: add guild join handler`, `fix: handle missing intents`) to aid changelog automation.
+- **Conventional commits are required.** Use prefixes like `feat:`, `fix:`, `chore:`, `refactor:`, etc., for every commit so changelog tooling stays accurate. If a change mixes scopes, split the work instead of using a generic prefix.
 - Keep commits focused on a single concern and include relevant context in the body.
 - Pull requests should summarize the change, link tracking issues, and note manual verification (e.g., guild used).
 - Include screenshots or logs when updating command outputs so reviewers can confirm Discord embeds and formatting.
+
+### Discord Quote Commands Reference
+- `/quote add` creates quotes, generating short IDs plus mention metadata, so future features should reuse the existing repository abstractions when persisting related data.
+- `/quote find` resolves an exact short ID (with fuzzy fallback) and `/quote search` performs regex matching against quote messages/tags. New commands should call the repository instead of hitting Mongo directly to keep logic centralized.
+
+### Backlog Hygiene
+- Keep `backlog.md` up to date: when we discuss new features (e.g., quote moderation, CI), add or update checkboxes there so priorities remain visible.
+- Before starting new work, skim the backlog and mark completed items in commits to ensure long-running tasks don’t get lost.
 
 ## Configuration & Security Tips
 - Store Discord bot tokens and secrets in environment variables or `dotnet user-secrets`; never commit them.

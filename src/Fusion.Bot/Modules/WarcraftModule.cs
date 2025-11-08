@@ -1,5 +1,8 @@
+using System;
+using System.Text;
 using Discord.Interactions;
 using Fusion.Infrastructure.Warcraft;
+using Fusion.Infrastructure.Warcraft.Models;
 using Microsoft.Extensions.Logging;
 
 namespace Fusion.Bot.Modules;
@@ -63,7 +66,7 @@ public sealed class WarcraftModule : InteractionModuleBase<SocketInteractionCont
                     profile.Name,
                     profile.Level,
                     profile.Realm?.Name ?? trimmedRealm);
-                responseMessage = $"Fetched character `{profile.Name}` (level {profile.Level}). UI response coming soon.";
+                responseMessage = BuildCharacterSummary(profile);
             }
         }
         catch (Exception exception)
@@ -78,5 +81,31 @@ public sealed class WarcraftModule : InteractionModuleBase<SocketInteractionCont
 #pragma warning restore CA1031 // Do not catch general exception types
 
         await RespondAsync(responseMessage, ephemeral: true).ConfigureAwait(false);
+    }
+
+    private static string BuildCharacterSummary(CharacterProfile profile)
+    {
+        var builder = new StringBuilder();
+        var className = profile.CharacterClass?.Name ?? "Adventurer";
+        var realmName = profile.Realm?.Name ?? "Unknown realm";
+        var realmSlug = profile.Realm?.Slug ?? "n/a";
+
+        builder.AppendLine($"**{profile.Name}** – Level {profile.Level} {className}");
+        builder.AppendLine($"Realm: {realmName} ({realmSlug})");
+
+        if (profile.ItemLevel is int itemLevel && itemLevel > 0)
+        {
+            builder.AppendLine($"Item Level: {itemLevel}");
+        }
+
+        if (profile.LastLoginTimestamp is long timestamp && timestamp > 0)
+        {
+            var lastLogin = DateTimeOffset.FromUnixTimeMilliseconds(timestamp).UtcDateTime;
+            builder.AppendLine($"Last Login: {lastLogin:yyyy-MM-dd HH:mm} UTC");
+        }
+
+        builder.Append("Region: US (default)");
+
+        return builder.ToString();
     }
 }

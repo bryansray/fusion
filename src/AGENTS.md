@@ -46,6 +46,7 @@
 
 ### Backlog Hygiene
 - Keep `backlog.md` up to date: when we discuss new features (e.g., quote moderation, CI), add or update checkboxes there so priorities remain visible.
+- Mirror new slash commands in `docs/slash-commands/`. Each command family (Quotes, Warcraft, future Raider.IO/WarcraftLogs) should have a Markdown reference describing parameters, behavior, configuration, and testing notes so docs stay current with the bot.
 - Before starting new work, skim the backlog and mark completed items in commits to ensure long-running tasks don’t get lost.
 
 ## Configuration & Security Tips

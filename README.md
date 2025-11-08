@@ -70,6 +70,8 @@ You can override any value with environment variables (e.g., `Discord__Token`, `
 - `/quote delete <short-id>` & `/quote restore <short-id>` – soft-delete/restore quotes; restricted to members with `Manage Messages`/`Manage Server`/`Administrator`.
 - `/warcraft character <realm> <name>` – fetches a WoW character profile via the Blizzard API (defaults to the US region) and returns a summary.
 
+Detailed command docs live under `docs/slash-commands/` (e.g., [`quote-system`](docs/slash-commands/quote-system.md), [`warcraft`](docs/slash-commands/warcraft.md)).
+
 Each successful lookup increments the `Uses` counter so you can later determine which quotes are most referenced.
 
 ## Running Tests

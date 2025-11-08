@@ -62,7 +62,7 @@ public sealed class MongoIndexInitializer : IHostedService
 
         try
         {
-            var result = await _collection.Indexes.CreateManyAsync(models, cancellationToken);
+            var result = await _collection.Indexes.CreateManyAsync(models, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation("Ensured Mongo indexes: {IndexNames}", string.Join(", ", result));
         }
         catch (Exception exception)

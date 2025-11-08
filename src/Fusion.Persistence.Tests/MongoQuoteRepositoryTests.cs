@@ -8,7 +8,7 @@ using MongoDB.Driver;
 
 namespace Fusion.Persistence.Tests;
 
-public sealed class MongoQuoteRepositoryTests : IClassFixture<MongoDbFixture>
+internal sealed class MongoQuoteRepositoryTests : IClassFixture<MongoDbFixture>
 {
     private static readonly Faker Faker = new();
     private readonly MongoDbFixture _fixture;
@@ -44,8 +44,8 @@ public sealed class MongoQuoteRepositoryTests : IClassFixture<MongoDbFixture>
             AddedBy = 789
         };
 
-        await repository.InsertAsync(document);
-        var fetched = await repository.GetByShortIdAsync(document.ShortId);
+        await repository.InsertAsync(document).ConfigureAwait(false);
+        var fetched = await repository.GetByShortIdAsync(document.ShortId).ConfigureAwait(false);
 
         Assert.NotNull(fetched);
         Assert.Equal(document.Person, fetched!.Person);

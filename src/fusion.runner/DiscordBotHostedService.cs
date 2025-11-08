@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace Fusion.Runner;
 
-public sealed class DiscordBotHostedService : IHostedService
+internal sealed class DiscordBotHostedService : IHostedService
 {
     private readonly DiscordSocketClient _client;
     private readonly ILogger<DiscordBotHostedService> _logger;
@@ -55,12 +55,12 @@ public sealed class DiscordBotHostedService : IHostedService
         _client.Log += HandleLogAsync;
         _client.Ready += HandleReadyAsync;
 
-        await _slashCommandService.InitializeAsync();
+        await _slashCommandService.InitializeAsync().ConfigureAwait(false);
 
         _logger.LogInformation("Starting Discord client...");
 
-        await _client.LoginAsync(TokenType.Bot, token);
-        await _client.StartAsync();
+        await _client.LoginAsync(TokenType.Bot, token).ConfigureAwait(false);
+        await _client.StartAsync().ConfigureAwait(false);
 
         _isStarted = true;
 
@@ -78,12 +78,12 @@ public sealed class DiscordBotHostedService : IHostedService
 
         if (_client.ConnectionState == ConnectionState.Connected)
         {
-            await _client.StopAsync();
+            await _client.StopAsync().ConfigureAwait(false);
         }
 
         if (_client.LoginState == LoginState.LoggedIn)
         {
-            await _client.LogoutAsync();
+            await _client.LogoutAsync().ConfigureAwait(false);
         }
 
         _client.Log -= HandleLogAsync;

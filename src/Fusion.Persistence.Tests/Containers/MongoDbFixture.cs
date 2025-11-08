@@ -3,7 +3,7 @@ using Testcontainers.MongoDb;
 
 namespace Fusion.Persistence.Tests.Containers;
 
-public sealed class MongoDbFixture : IAsyncLifetime
+internal sealed class MongoDbFixture : IAsyncLifetime
 {
     private readonly MongoDbContainer _container = new MongoDbBuilder()
         .WithImage("mongo:7.0")
@@ -14,12 +14,12 @@ public sealed class MongoDbFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await _container.StartAsync();
+        await _container.StartAsync().ConfigureAwait(false);
         Client = new MongoClient(_container.GetConnectionString());
     }
 
     public async Task DisposeAsync()
     {
-        await _container.StopAsync();
+        await _container.StopAsync().ConfigureAwait(false);
     }
 }

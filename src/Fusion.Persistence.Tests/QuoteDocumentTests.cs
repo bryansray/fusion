@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Fusion.Persistence.Tests;
 
-public sealed class QuoteDocumentTests
+internal sealed class QuoteDocumentTests
 {
     private static readonly Faker Faker = new();
 

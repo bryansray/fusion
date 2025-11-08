@@ -4,6 +4,10 @@ set shell := ["/bin/bash", "-cu"]
 build:
 	dotnet build src/fusion.sln
 
+# Run analyzers/formatting
+lint:
+	dotnet format src/fusion.sln
+
 # Run every test project, skipping integration category
 test:
 	dotnet test src/fusion.sln --filter "TestCategory!=Integration"

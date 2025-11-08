@@ -84,7 +84,7 @@ try
         })
         .Build();
 
-    await host.RunAsync();
+    await host.RunAsync().ConfigureAwait(false);
 }
 catch (Exception exception)
 {
@@ -95,4 +95,4 @@ finally
     Log.CloseAndFlush();
 }
 
-public partial class Program;
+internal partial class Program;

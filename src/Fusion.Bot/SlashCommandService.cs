@@ -47,7 +47,7 @@ public sealed class SlashCommandService
         }
 
         _logger.LogInformation("Loading interaction modules...");
-        await _interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), _serviceProvider);
+        await _interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), _serviceProvider).ConfigureAwait(false);
         _isInitialized = true;
         _logger.LogInformation("Loaded {ModuleCount} interaction modules.", _interactionService.Modules.Count);
     }
@@ -61,7 +61,7 @@ public sealed class SlashCommandService
 
         if (_guildId is ulong guildId)
         {
-            await _interactionService.RegisterCommandsToGuildAsync(guildId, deleteMissing: true);
+            await _interactionService.RegisterCommandsToGuildAsync(guildId, deleteMissing: true).ConfigureAwait(false);
             _logger.LogInformation(
                 "Registered {CommandCount} slash commands to guild {GuildId}.",
                 _interactionService.SlashCommands.Count,
@@ -69,7 +69,7 @@ public sealed class SlashCommandService
         }
         else
         {
-            await _interactionService.RegisterCommandsGloballyAsync(deleteMissing: true);
+            await _interactionService.RegisterCommandsGloballyAsync(deleteMissing: true).ConfigureAwait(false);
             _logger.LogInformation(
                 "Registered {CommandCount} slash commands globally.",
                 _interactionService.SlashCommands.Count);
@@ -83,7 +83,7 @@ public sealed class SlashCommandService
         try
         {
             var context = new SocketInteractionContext(_client, interaction);
-            var result = await _interactionService.ExecuteCommandAsync(context, _serviceProvider);
+            var result = await _interactionService.ExecuteCommandAsync(context, _serviceProvider).ConfigureAwait(false);
 
             if (!result.IsSuccess && result.Error != InteractionCommandError.UnmetPrecondition)
             {
@@ -102,7 +102,7 @@ public sealed class SlashCommandService
             {
                 await discordInteraction.RespondAsync(
                     "Sorry, something went wrong while processing that command.",
-                    ephemeral: true);
+                    ephemeral: true).ConfigureAwait(false);
             }
         }
     }

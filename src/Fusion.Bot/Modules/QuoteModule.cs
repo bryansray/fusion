@@ -57,13 +57,13 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
             request.Nsfw,
             document.ShortId);
 
-        await _repository.InsertAsync(document);
+        await _repository.InsertAsync(document).ConfigureAwait(false);
 
         var tagsSummary = tagList.Count > 0 ? string.Join(", ", tagList) : "No tags";
 
         await RespondAsync(
             $"Quote {document.ShortId} from {document.Person} received! Tags: {tagsSummary} NSFW: {request.Nsfw}",
-            ephemeral: true);
+            ephemeral: true).ConfigureAwait(false);
     }
 
     [SlashCommand("find", "Find a quote by its short id.")]
@@ -71,22 +71,22 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
     {
         if (string.IsNullOrWhiteSpace(shortId))
         {
-            await RespondAsync("Please provide the quote id you want to look up.", ephemeral: true);
+            await RespondAsync("Please provide the quote id you want to look up.", ephemeral: true).ConfigureAwait(false);
             return;
         }
 
         var normalized = shortId.Trim().ToUpperInvariant();
-        var quote = await _repository.GetByShortIdAsync(normalized);
+        var quote = await _repository.GetByShortIdAsync(normalized).ConfigureAwait(false);
         string response;
 
         if (quote is not null)
         {
-            await _repository.IncrementUsesAsync(quote.ShortId);
+            await _repository.IncrementUsesAsync(quote.ShortId).ConfigureAwait(false);
             response = FormatQuoteResponse(quote);
         }
         else
         {
-            var fuzzyMatches = await _repository.GetFuzzyShortIdAsync(normalized);
+            var fuzzyMatches = await _repository.GetFuzzyShortIdAsync(normalized).ConfigureAwait(false);
             if (fuzzyMatches.Count == 0)
             {
                 response = $"No quotes found matching id prefix `{normalized}`.";
@@ -94,12 +94,12 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
             else
             {
                 var fallback = fuzzyMatches.First();
-                await _repository.IncrementUsesAsync(fallback.ShortId);
+                await _repository.IncrementUsesAsync(fallback.ShortId).ConfigureAwait(false);
                 response = $"Quote `{normalized}` not found. Showing closest match:`\n`" + FormatQuoteResponse(fallback);
             }
         }
 
-        await RespondAsync(response, ephemeral: false);
+        await RespondAsync(response, ephemeral: false).ConfigureAwait(false);
     }
 
     [SlashCommand("search", "Search quote text and tags.")]
@@ -109,16 +109,16 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
     {
         if (string.IsNullOrWhiteSpace(query))
         {
-            await RespondAsync("Please provide text to search for.", ephemeral: true);
+            await RespondAsync("Please provide text to search for.", ephemeral: true).ConfigureAwait(false);
             return;
         }
 
         var clampedLimit = Math.Clamp(limit, 1, 10);
-        var results = await _repository.SearchAsync(query, clampedLimit);
+        var results = await _repository.SearchAsync(query, clampedLimit).ConfigureAwait(false);
 
         if (results.Count == 0)
         {
-            await RespondAsync("No quotes matched that search.", ephemeral: true);
+            await RespondAsync("No quotes matched that search.", ephemeral: true).ConfigureAwait(false);
             return;
         }
 
@@ -133,10 +133,10 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
 
         foreach (var result in results)
         {
-            await _repository.IncrementUsesAsync(result.ShortId);
+            await _repository.IncrementUsesAsync(result.ShortId).ConfigureAwait(false);
         }
 
-        await RespondAsync(builder.ToString(), ephemeral: true);
+        await RespondAsync(builder.ToString(), ephemeral: true).ConfigureAwait(false);
     }
 
     [SlashCommand("delete", "Soft delete a quote by its short id.")]
@@ -144,24 +144,24 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
     {
         if (string.IsNullOrWhiteSpace(shortId))
         {
-            await RespondAsync("Please provide the quote id you want to delete.", ephemeral: true);
+            await RespondAsync("Please provide the quote id you want to delete.", ephemeral: true).ConfigureAwait(false);
             return;
         }
 
         if (!HasQuoteModerationPermission())
         {
-            await RespondAsync("You do not have permission to delete quotes.", ephemeral: true);
+            await RespondAsync("You do not have permission to delete quotes.", ephemeral: true).ConfigureAwait(false);
             return;
         }
 
         var normalized = shortId.Trim().ToUpperInvariant();
-        var deleted = await _repository.SoftDeleteAsync(normalized, Context.User.Id);
+        var deleted = await _repository.SoftDeleteAsync(normalized, Context.User.Id).ConfigureAwait(false);
 
         var message = deleted
             ? $"Quote `{normalized}` has been soft deleted."
             : $"Quote `{normalized}` does not exist or was already deleted.";
 
-        await RespondAsync(message, ephemeral: true);
+        await RespondAsync(message, ephemeral: true).ConfigureAwait(false);
     }
 
     [SlashCommand("restore", "Restore a previously deleted quote.")]
@@ -169,24 +169,24 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
     {
         if (string.IsNullOrWhiteSpace(shortId))
         {
-            await RespondAsync("Please provide the quote id you want to restore.", ephemeral: true);
+            await RespondAsync("Please provide the quote id you want to restore.", ephemeral: true).ConfigureAwait(false);
             return;
         }
 
         if (!HasQuoteModerationPermission())
         {
-            await RespondAsync("You do not have permission to restore quotes.", ephemeral: true);
+            await RespondAsync("You do not have permission to restore quotes.", ephemeral: true).ConfigureAwait(false);
             return;
         }
 
         var normalized = shortId.Trim().ToUpperInvariant();
-        var restored = await _repository.RestoreAsync(normalized, Context.User.Id);
+        var restored = await _repository.RestoreAsync(normalized, Context.User.Id).ConfigureAwait(false);
 
         var message = restored
             ? $"Quote `{normalized}` has been restored."
             : $"Quote `{normalized}` does not exist or is not deleted.";
 
-        await RespondAsync(message, ephemeral: true);
+        await RespondAsync(message, ephemeral: true).ConfigureAwait(false);
     }
 
     private IReadOnlyList<MentionedUser> ResolveMentionedUsers(string message)

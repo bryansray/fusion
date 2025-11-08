@@ -46,7 +46,7 @@ public sealed class MongoQuoteRepository : IQuoteRepository
 
     public async Task InsertAsync(QuoteDocument quote, CancellationToken cancellationToken = default)
     {
-        await _collection.InsertOneAsync(quote, cancellationToken: cancellationToken);
+        await _collection.InsertOneAsync(quote, cancellationToken: cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Quote from {Author} persisted to MongoDB.", quote.Person);
     }
 
@@ -57,7 +57,7 @@ public sealed class MongoQuoteRepository : IQuoteRepository
         var filter = Builders<QuoteDocument>.Filter.And(
             Builders<QuoteDocument>.Filter.Eq(q => q.PersonKey, author),
             Builders<QuoteDocument>.Filter.Eq(q => q.DeletedAt, null));
-        return await _collection.Find(filter).ToListAsync(cancellationToken);
+        return await _collection.Find(filter).ToListAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<QuoteDocument?> GetByShortIdAsync(string shortId, CancellationToken cancellationToken = default)
@@ -66,7 +66,7 @@ public sealed class MongoQuoteRepository : IQuoteRepository
         var filter = Builders<QuoteDocument>.Filter.And(
             Builders<QuoteDocument>.Filter.Eq(q => q.ShortId, normalized),
             Builders<QuoteDocument>.Filter.Eq(q => q.DeletedAt, null));
-        return await _collection.Find(filter).FirstOrDefaultAsync(cancellationToken);
+        return await _collection.Find(filter).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<IReadOnlyList<QuoteDocument>> GetFuzzyShortIdAsync(
@@ -84,7 +84,7 @@ public sealed class MongoQuoteRepository : IQuoteRepository
             Builders<QuoteDocument>.Filter.Regex(q => q.ShortId, new BsonRegularExpression(pattern)),
             Builders<QuoteDocument>.Filter.Eq(q => q.DeletedAt, null));
 
-        return await _collection.Find(filter).ToListAsync(cancellationToken);
+        return await _collection.Find(filter).ToListAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<IReadOnlyList<QuoteDocument>> SearchAsync(
@@ -107,7 +107,7 @@ public sealed class MongoQuoteRepository : IQuoteRepository
             Builders<QuoteDocument>.Filter.Eq(q => q.DeletedAt, null));
 
         var limited = Math.Clamp(limit, 1, 25);
-        return await _collection.Find(filter).Limit(limited).ToListAsync(cancellationToken);
+        return await _collection.Find(filter).Limit(limited).ToListAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task IncrementUsesAsync(string shortId, CancellationToken cancellationToken = default)
@@ -121,7 +121,7 @@ public sealed class MongoQuoteRepository : IQuoteRepository
         var filter = Builders<QuoteDocument>.Filter.Eq(q => q.ShortId, normalized);
         var update = Builders<QuoteDocument>.Update.Inc(q => q.Uses, 1);
 
-        await _collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+        await _collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<bool> SoftDeleteAsync(string shortId, ulong deletedBy, CancellationToken cancellationToken = default)
@@ -140,7 +140,7 @@ public sealed class MongoQuoteRepository : IQuoteRepository
             .Set(q => q.DeletedAt, DateTimeOffset.UtcNow)
             .Set(q => q.DeletedBy, deletedBy);
 
-        var result = await _collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+        var result = await _collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken).ConfigureAwait(false);
         return result.ModifiedCount > 0;
     }
 
@@ -160,7 +160,7 @@ public sealed class MongoQuoteRepository : IQuoteRepository
             .Set(q => q.DeletedAt, null)
             .Set(q => q.DeletedBy, null);
 
-        var result = await _collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+        var result = await _collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken).ConfigureAwait(false);
         return result.ModifiedCount > 0;
     }
 }

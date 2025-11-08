@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Fusion.Bot.Tests;
 
-public class QuoteModuleTests
+internal class QuoteModuleTests
 {
     [Theory]
     [InlineData("Ada Lovelace", "ada-lovelace")]

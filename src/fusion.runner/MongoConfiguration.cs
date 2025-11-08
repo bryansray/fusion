@@ -3,7 +3,7 @@ using MongoDB.Bson.Serialization.Conventions;
 
 namespace Fusion.Runner;
 
-public static class MongoConfiguration
+internal static class MongoConfiguration
 {
     private static bool _configured;
 

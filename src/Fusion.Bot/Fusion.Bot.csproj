@@ -12,12 +12,13 @@
 
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="3.18.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.10" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../Fusion.Persistence/Fusion.Persistence.csproj" />
+    <ProjectReference Include="../Fusion.Infrastructure/Fusion.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

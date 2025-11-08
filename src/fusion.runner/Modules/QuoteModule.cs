@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using System.Text.RegularExpressions;
 using Discord;
 using Discord.Interactions;
@@ -27,6 +25,7 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
     {
         var tagList = request.GetTags();
         var (personName, personUserId) = ResolvePerson(request.Person);
+        var mentionedUsers = ResolveMentionedUsers(request.Message);
         var document = new QuoteDocument
         {
             Person = personName,
@@ -34,6 +33,7 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
             PersonUserId = personUserId,
             Message = request.Message,
             Tags = tagList.ToArray(),
+            MentionedUsers = mentionedUsers,
             Nsfw = request.Nsfw,
             GuildId = Context.Guild?.Id ?? 0,
             ChannelId = Context.Channel.Id,
@@ -61,6 +61,49 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
         await RespondAsync(
             $"Quote {document.ShortId} from {document.Person} received! Tags: {tagsSummary} NSFW: {request.Nsfw}",
             ephemeral: true);
+    }
+
+    private IReadOnlyList<MentionedUser> ResolveMentionedUsers(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return Array.Empty<MentionedUser>();
+        }
+
+        var matches = Regex.Matches(message, "<@!?([0-9]+)>");
+        if (matches.Count == 0)
+        {
+            return Array.Empty<MentionedUser>();
+        }
+
+        var guild = Context.Guild;
+        var result = new List<MentionedUser>(matches.Count);
+
+        foreach (Match match in matches)
+        {
+            if (!match.Success || match.Groups.Count < 2)
+            {
+                continue;
+            }
+
+            if (!ulong.TryParse(match.Groups[1].Value, out var userId))
+            {
+                continue;
+            }
+
+            var user = guild?.GetUser(userId) ?? Context.Client.GetUser(userId);
+            if (user is null)
+            {
+                continue;
+            }
+
+            result.Add(new MentionedUser(user.Id, GetUserDisplayName(user)));
+        }
+
+        return result
+            .GroupBy(u => u.UserId)
+            .Select(g => g.First())
+            .ToArray();
     }
 
     private static string NormalizePersonKey(string person)

@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using Fusion.Runner;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -22,6 +19,8 @@ public sealed class QuoteDocument
     public string PersonKey { get; init; } = string.Empty;
 
     public IReadOnlyList<string> Tags { get; init; } = Array.Empty<string>();
+
+    public IReadOnlyList<MentionedUser> MentionedUsers { get; init; } = Array.Empty<MentionedUser>();
 
     public bool Nsfw { get; init; }
 

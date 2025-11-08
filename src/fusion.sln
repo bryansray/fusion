@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fusion.runner", "fusion.runner\fusion.runner.csproj", "{12581500-1C49-47AA-B4D8-F2DB607CBCBE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fusion.Runner", "Fusion.Runner\Fusion.Runner.csproj", "{12581500-1C49-47AA-B4D8-F2DB607CBCBE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fusion.Persistence", "Fusion.Persistence\Fusion.Persistence.csproj", "{3AF9B82C-9FA9-4108-B04F-DBA48BE47F58}"
 EndProject

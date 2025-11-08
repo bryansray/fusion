@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fusion.runner", "fusion.run
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fusion.Persistence", "Fusion.Persistence\Fusion.Persistence.csproj", "{3AF9B82C-9FA9-4108-B04F-DBA48BE47F58}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fusion.Bot", "Fusion.Bot\Fusion.Bot.csproj", "{A8B7AD97-5A33-4899-A2FD-A754B51E9D10}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,18 @@ Global
 		{3AF9B82C-9FA9-4108-B04F-DBA48BE47F58}.Release|x64.Build.0 = Release|Any CPU
 		{3AF9B82C-9FA9-4108-B04F-DBA48BE47F58}.Release|x86.ActiveCfg = Release|Any CPU
 		{3AF9B82C-9FA9-4108-B04F-DBA48BE47F58}.Release|x86.Build.0 = Release|Any CPU
+		{A8B7AD97-5A33-4899-A2FD-A754B51E9D10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8B7AD97-5A33-4899-A2FD-A754B51E9D10}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8B7AD97-5A33-4899-A2FD-A754B51E9D10}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A8B7AD97-5A33-4899-A2FD-A754B51E9D10}.Debug|x64.Build.0 = Debug|Any CPU
+		{A8B7AD97-5A33-4899-A2FD-A754B51E9D10}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A8B7AD97-5A33-4899-A2FD-A754B51E9D10}.Debug|x86.Build.0 = Debug|Any CPU
+		{A8B7AD97-5A33-4899-A2FD-A754B51E9D10}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8B7AD97-5A33-4899-A2FD-A754B51E9D10}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8B7AD97-5A33-4899-A2FD-A754B51E9D10}.Release|x64.ActiveCfg = Release|Any CPU
+		{A8B7AD97-5A33-4899-A2FD-A754B51E9D10}.Release|x64.Build.0 = Release|Any CPU
+		{A8B7AD97-5A33-4899-A2FD-A754B51E9D10}.Release|x86.ActiveCfg = Release|Any CPU
+		{A8B7AD97-5A33-4899-A2FD-A754B51E9D10}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

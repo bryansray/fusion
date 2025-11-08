@@ -1,6 +1,7 @@
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using Fusion.Bot;
 using Fusion.Persistence;
 using Fusion.Runner;
 using Microsoft.Extensions.Configuration;

@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../Fusion.Persistence/Fusion.Persistence.csproj" />
+    <ProjectReference Include="../Fusion.Bot/Fusion.Bot.csproj" />
   </ItemGroup>
 
 </Project>

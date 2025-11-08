@@ -6,13 +6,14 @@ Fusion is a .NET 9 Discord bot focused on capturing memorable quotes from your c
 - Slash commands built with `Discord.Net` interaction modules (`/ping`, `/quote add/find/search/delete/restore`).
 - MongoDB-backed quote storage with short identifiers, fuzzy lookup, soft delete, and automatic index creation.
 - Structured Serilog logging and health-oriented hosted services (socket lifecycle + Mongo index initializer).
-- Modular solution layout: runner, bot, and persistence layers with corresponding unit tests.
+- Modular solution layout: runner, bot, persistence, and Warcraft API layers with corresponding unit tests.
 
 ## Repository Layout
 - `src/Fusion.Runner` – host application (`dotnet run`) that wires configuration, logging, Discord socket, and persistence.
 - `src/Fusion.Bot` – interaction modules, option classes, and services that define slash-command behavior.
 - `src/Fusion.Persistence` – MongoDB repositories, options, and supporting models/utilities.
-- `src/Fusion.*.Tests` – xUnit test projects for bot and persistence layers.
+- `src/Fusion.Infrastructure` – external API clients such as Warcraft/Blizzard (and future Raider.IO, WarcraftLogs).
+- `src/Fusion.*.Tests` – xUnit test projects for bot, persistence, and infrastructure layers.
 
 ## Prerequisites
 - .NET 9.0 SDK
@@ -31,6 +32,10 @@ Fusion reads configuration from `appsettings.json`, environment variables, and u
 | `Mongo`            | `ConnectionString`        | **Required.** MongoDB connection string. |
 |                    | `DatabaseName`            | Defaults to `fusion`. |
 |                    | `QuotesCollectionName`    | Defaults to `quotes`. |
+| `Warcraft`         | `Region`                  | Defaults to `us`; controls API host (us/eu/kr/tw). |
+|                    | `Locale`                  | Defaults to `en_US`. |
+|                    | `ClientId`                | Required for Blizzard OAuth (from https://develop.battle.net). |
+|                    | `ClientSecret`            | Required; never commit this value. |
 
 ### Example local secrets
 ```bash
@@ -39,6 +44,10 @@ dotnet user-secrets set "Discord:Token" "<bot-token>"
 dotnet user-secrets set "Discord:ClientId" "<application-id>"
 dotnet user-secrets set "Discord:GuildId" "<dev-guild-id>"   # optional
 dotnet user-secrets set "Mongo:ConnectionString" "mongodb://localhost:27017"
+dotnet user-secrets set "Warcraft:ClientId" "<battle-net-client-id>"
+dotnet user-secrets set "Warcraft:ClientSecret" "<battle-net-client-secret>"
+dotnet user-secrets set "Warcraft:Region" "us"
+dotnet user-secrets set "Warcraft:Locale" "en_US"
 ```
 
 You can override any value with environment variables (e.g., `Discord__Token`, `Mongo__DatabaseName`).

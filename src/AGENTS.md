@@ -34,6 +34,11 @@
 - `/quote add` creates quotes, generating short IDs plus mention metadata, so future features should reuse the existing repository abstractions when persisting related data.
 - `/quote find` resolves an exact short ID (with fuzzy fallback) and `/quote search` performs regex matching against quote messages/tags. New commands should call the repository instead of hitting Mongo directly to keep logic centralized.
 
+
+### Testing Stack
+- `Fusion.Bot.Tests` exercises slash-command logic; run `dotnet test src/Fusion.Bot.Tests/Fusion.Bot.Tests.csproj`.
+- `Fusion.Persistence.Tests` covers persistence models and repositories. It includes Testcontainers-based integration tests (skipped by default); enable them when Docker is available to verify real Mongo interactions.
+
 ### Backlog Hygiene
 - Keep `backlog.md` up to date: when we discuss new features (e.g., quote moderation, CI), add or update checkboxes there so priorities remain visible.
 - Before starting new work, skim the backlog and mark completed items in commits to ensure long-running tasks don’t get lost.

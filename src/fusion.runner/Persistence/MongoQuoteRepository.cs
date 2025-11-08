@@ -45,14 +45,14 @@ public sealed class MongoQuoteRepository : IQuoteRepository
     public async Task InsertAsync(QuoteDocument quote, CancellationToken cancellationToken = default)
     {
         await _collection.InsertOneAsync(quote, cancellationToken: cancellationToken);
-        _logger.LogInformation("Quote from {Author} persisted to MongoDB.", quote.Author);
+        _logger.LogInformation("Quote from {Author} persisted to MongoDB.", quote.Person);
     }
 
     public async Task<IReadOnlyList<QuoteDocument>> FindByAuthorAsync(
         string author,
         CancellationToken cancellationToken = default)
     {
-        var filter = Builders<QuoteDocument>.Filter.Eq(q => q.Author, author);
+        var filter = Builders<QuoteDocument>.Filter.Eq(q => q.Person, author);
         return await _collection.Find(filter).ToListAsync(cancellationToken);
     }
 }

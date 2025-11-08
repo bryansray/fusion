@@ -13,9 +13,13 @@ public sealed class QuoteDocument
 
     public string ShortId { get; private init; } = ShortIdentifier.New();
 
-    public required string Author { get; init; }
+    public required string Person { get; init; }
+
+    public ulong? PersonUserId { get; init; }
 
     public required string Message { get; init; }
+
+    public string PersonKey { get; init; } = string.Empty;
 
     public IReadOnlyList<string> Tags { get; init; } = Array.Empty<string>();
 
@@ -27,6 +31,13 @@ public sealed class QuoteDocument
 
     public ulong AddedBy { get; init; }
 
-    [BsonElement("createdAt")]
     public DateTimeOffset AddedAt { get; init; }
+
+    public int Likes { get; init; }
+
+    public int Uses { get; init; }
+
+    public DateTimeOffset? DeletedAt { get; init; }
+
+    public ulong? DeletedBy { get; init; }
 }

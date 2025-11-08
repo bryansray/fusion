@@ -1,4 +1,7 @@
 using System;
+using System.Linq;
+using System.Text.RegularExpressions;
+using Discord;
 using Discord.Interactions;
 using Fusion.Runner.Persistence;
 using Fusion.Runner.Persistence.Models;
@@ -24,7 +27,9 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
         var tagList = request.GetTags();
         var document = new QuoteDocument
         {
-            Author = request.Author,
+            Person = request.Author,
+            PersonKey = NormalizeAuthorKey(request.Author),
+            PersonUserId = ResolveAuthorId(request.Author),
             Message = request.Message,
             Tags = tagList.ToArray(),
             Nsfw = request.Nsfw,
@@ -35,12 +40,13 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
         };
 
         _logger.LogInformation(
-            "Quote add requested by {User} ({UserId}) in Guild {GuildId} Channel {ChannelId}: {Author} - {Message} | Tags: {Tags} | NSFW: {Nsfw} | ShortId: {ShortId}",
+            "Quote add requested by {User} ({UserId}) in Guild {GuildId} Channel {ChannelId}: {Author} (Id: {AuthorId}) - {Message} | Tags: {Tags} | NSFW: {Nsfw} | ShortId: {ShortId}",
             Context.User.Username,
             Context.User.Id,
             document.GuildId,
             document.ChannelId,
             request.Author,
+            document.PersonUserId,
             request.Message,
             tagList,
             request.Nsfw,
@@ -53,5 +59,46 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
         await RespondAsync(
             $"Quote {document.ShortId} from {request.Author} received! Tags: {tagsSummary} NSFW: {request.Nsfw}",
             ephemeral: true);
+    }
+
+    private static string NormalizeAuthorKey(string author)
+    {
+        if (string.IsNullOrWhiteSpace(author))
+        {
+            return "unknown";
+        }
+
+        var normalized = author.Trim().ToLowerInvariant();
+        normalized = Regex.Replace(normalized, "[^a-z0-9]+", "-");
+        normalized = normalized.Trim('-');
+
+        return string.IsNullOrWhiteSpace(normalized) ? "unknown" : normalized;
+    }
+
+    private ulong? ResolveAuthorId(string author)
+    {
+        if (string.IsNullOrWhiteSpace(author))
+        {
+            return null;
+        }
+
+        if (MentionUtils.TryParseUser(author, out var mentionUserId))
+        {
+            return mentionUserId;
+        }
+
+        var guild = Context.Guild;
+        if (guild is null)
+        {
+            return null;
+        }
+
+        var trimmed = author.Trim();
+        var user = guild.Users.FirstOrDefault(u =>
+            string.Equals(u.DisplayName, trimmed, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(u.Username, trimmed, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals($"{u.Username}#{u.Discriminator}", trimmed, StringComparison.OrdinalIgnoreCase));
+
+        return user?.Id;
     }
 }

@@ -3,14 +3,14 @@
 Fusion is a .NET 9 Discord bot focused on capturing memorable quotes from your community. It exposes a set of slash commands for collecting, searching, and moderating quotes, persists all data in MongoDB, and is hosted via the generic host so it can run locally or from any container-friendly environment.
 
 ## Highlights
-- Slash commands built with `Discord.Net` interaction modules (`/ping`, `/quote add/find/search/delete/restore`).
+- Slash commands built with `Discord.Net` interaction modules (`/ping`, `/quote add/find/search/delete/restore`, `/warcraft character`).
 - MongoDB-backed quote storage with short identifiers, fuzzy lookup, soft delete, and automatic index creation.
 - Structured Serilog logging and health-oriented hosted services (socket lifecycle + Mongo index initializer).
 - Modular solution layout: runner, bot, persistence, and Warcraft API layers with corresponding unit tests.
 
 ## Repository Layout
 - `src/Fusion.Runner` – host application (`dotnet run`) that wires configuration, logging, Discord socket, and persistence.
-- `src/Fusion.Bot` – interaction modules, option classes, and services that define slash-command behavior.
+- `src/Fusion.Bot` – interaction modules, option classes, and services that define slash-command behavior (e.g., quotes, Warcraft lookups).
 - `src/Fusion.Persistence` – MongoDB repositories, options, and supporting models/utilities.
 - `src/Fusion.Infrastructure` – external API clients such as Warcraft/Blizzard (and future Raider.IO, WarcraftLogs).
 - `src/Fusion.*.Tests` – xUnit test projects for bot, persistence, and infrastructure layers.
@@ -32,10 +32,10 @@ Fusion reads configuration from `appsettings.json`, environment variables, and u
 | `Mongo`            | `ConnectionString`        | **Required.** MongoDB connection string. |
 |                    | `DatabaseName`            | Defaults to `fusion`. |
 |                    | `QuotesCollectionName`    | Defaults to `quotes`. |
-| `Warcraft`         | `Region`                  | Defaults to `us`; controls API host (us/eu/kr/tw). |
-|                    | `Locale`                  | Defaults to `en_US`. |
-|                    | `ClientId`                | Required for Blizzard OAuth (from https://develop.battle.net). |
-|                    | `ClientSecret`            | Required; never commit this value. |
+| `Warcraft`         | `Region`                  | Defaults to `us`; controls API host (us/eu/kr/tw).
+|                    | `Locale`                  | Defaults to `en_US`.
+|                    | `ClientId`                | Required for Blizzard OAuth (https://develop.battle.net).
+|                    | `ClientSecret`            | Required.
 
 ### Example local secrets
 ```bash
@@ -68,6 +68,7 @@ You can override any value with environment variables (e.g., `Discord__Token`, `
 - `/quote find <short-id>` – retrieves a quote by short id (with fuzzy prefix fallback).
 - `/quote search <query> [limit]` – searches quote text and tags, returning up to 10 matches.
 - `/quote delete <short-id>` & `/quote restore <short-id>` – soft-delete/restore quotes; restricted to members with `Manage Messages`/`Manage Server`/`Administrator`.
+- `/warcraft character <realm> <name>` – fetches a WoW character profile via the Blizzard API (defaults to the US region) and returns a summary.
 
 Each successful lookup increments the `Uses` counter so you can later determine which quotes are most referenced.
 
@@ -81,3 +82,4 @@ Persistence tests expect a MongoDB instance; they spin up disposable databases b
 - The `MongoIndexInitializer` hosted service ensures the quotes collection has the necessary unique indexes on startup.
 - Logging defaults to Serilog console formatting; adjust sinks via `Serilog` settings.
 - Because slash commands are registered at runtime, restart the bot after adding or renaming commands so Discord picks up the new definitions.
+- Warcraft integrations rely on region-aware `BlizzardRegions` helpers inside `Fusion.Infrastructure`. When adding Raider.IO or WarcraftLogs clients, place them under `src/Fusion.Infrastructure/<Provider>` and expose interfaces for slash modules to consume.

@@ -5,7 +5,7 @@
 - Runtime code lives in `fusion.runner/Program.cs`. Place additional Discord client logic in this project unless a dedicated module warrants a new class library.
 - `fusion.runner/bin` and `fusion.runner/obj` are build outputs; do not commit their contents.
 - Interaction modules live under `Fusion.Bot/Modules`. Group commands by domain (Quotes, Warcraft, etc.) instead of dumping everything into one module.
-- Infrastructure clients (Blizzard/Warcraft, Raider.IO, WarcraftLogs) belong under `Fusion.Infrastructure/<Provider>`; surface interfaces so Discord modules can depend on abstractions.
+- Infrastructure clients (Blizzard/Warcraft, Raider.IO, WarcraftLogs) belong under `Fusion.Infrastructure/<Provider>`; surface interfaces so Discord modules can depend on abstractions. Follow the Blizzard/Raider.IO client pattern (options + HttpClient + tests) when adding new providers.
 - Test projects mirror production projects (`Fusion.Bot.Tests`, `Fusion.Infrastructure.Tests`); add new suites when standing up more clients or slash commands.
 
 ## Build, Test, and Development Commands
@@ -51,4 +51,5 @@
 
 ## Configuration & Security Tips
 - Store Discord bot tokens and secrets in environment variables or `dotnet user-secrets`; never commit them.
+- Treat third-party API credentials (Blizzard, Raider.IO, etc.) the same way—only reference them through configuration bindings and never log their values.
 - Document new configuration keys in the README or sample `.env` files so others can reproduce safely.

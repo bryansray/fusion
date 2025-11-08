@@ -5,6 +5,7 @@ using Fusion.Bot;
 using Fusion.Persistence;
 using Fusion.Runner;
 using Fusion.Infrastructure.Warcraft;
+using Fusion.Infrastructure.RaiderIO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -44,6 +45,7 @@ try
             services.Configure<DiscordOptions>(context.Configuration.GetSection("Discord"));
             services.Configure<MongoOptions>(context.Configuration.GetSection(MongoOptions.SectionName));
             services.Configure<WarcraftOptions>(context.Configuration.GetSection(WarcraftOptions.SectionName));
+            services.Configure<RaiderIoOptions>(context.Configuration.GetSection(RaiderIoOptions.SectionName));
 
             services.AddSingleton(provider =>
             {
@@ -85,6 +87,7 @@ try
             services.AddSingleton<SlashCommandService>();
             services.AddHostedService<DiscordBotHostedService>();
             services.AddHttpClient<IWarcraftClient, WarcraftClient>();
+            services.AddHttpClient<IRaiderIoClient, RaiderIoClient>();
         })
         .Build();
 

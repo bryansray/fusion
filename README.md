@@ -7,12 +7,13 @@ Fusion is a .NET 9 Discord bot focused on capturing memorable quotes from your c
 - MongoDB-backed quote storage with short identifiers, fuzzy lookup, soft delete, and automatic index creation.
 - Structured Serilog logging and health-oriented hosted services (socket lifecycle + Mongo index initializer).
 - Modular solution layout: runner, bot, persistence, and Warcraft API layers with corresponding unit tests.
+- Infrastructure HTTP clients for Blizzard (Warcraft) and Raider.IO to support richer game integrations.
 
 ## Repository Layout
 - `src/Fusion.Runner` – host application (`dotnet run`) that wires configuration, logging, Discord socket, and persistence.
 - `src/Fusion.Bot` – interaction modules, option classes, and services that define slash-command behavior (e.g., quotes, Warcraft lookups).
 - `src/Fusion.Persistence` – MongoDB repositories, options, and supporting models/utilities.
-- `src/Fusion.Infrastructure` – external API clients such as Warcraft/Blizzard (and future Raider.IO, WarcraftLogs).
+- `src/Fusion.Infrastructure` – external API clients such as Warcraft/Blizzard, Raider.IO (and soon WarcraftLogs).
 - `src/Fusion.*.Tests` – xUnit test projects for bot, persistence, and infrastructure layers.
 
 ## Prerequisites
@@ -36,6 +37,10 @@ Fusion reads configuration from `appsettings.json`, environment variables, and u
 |                    | `Locale`                  | Defaults to `en_US`.
 |                    | `ClientId`                | Required for Blizzard OAuth (https://develop.battle.net).
 |                    | `ClientSecret`            | Required.
+| `RaiderIO`         | `Region`                  | Defaults to `us`; determines which API shard to query.
+|                    | `BaseUrl`                 | Normally `https://raider.io/api/v1`; override for testing.
+|                    | `DefaultFields`           | Optional comma-separated `fields` query string appended to character lookups.
+|                    | `ApiKey`                  | Optional Raider.IO API key; sent via `x-api-key` header when present.
 
 ### Example local secrets
 ```bash
@@ -48,6 +53,9 @@ dotnet user-secrets set "Warcraft:ClientId" "<battle-net-client-id>"
 dotnet user-secrets set "Warcraft:ClientSecret" "<battle-net-client-secret>"
 dotnet user-secrets set "Warcraft:Region" "us"
 dotnet user-secrets set "Warcraft:Locale" "en_US"
+dotnet user-secrets set "RaiderIO:Region" "us"
+dotnet user-secrets set "RaiderIO:DefaultFields" "gear,mythic_plus_scores_by_season:current"
+dotnet user-secrets set "RaiderIO:ApiKey" "<raider-io-api-key>"
 ```
 
 You can override any value with environment variables (e.g., `Discord__Token`, `Mongo__DatabaseName`).

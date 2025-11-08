@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 using Fusion.Runner.Persistence;
 using Fusion.Runner.Persistence.Models;
 using Microsoft.Extensions.Logging;
@@ -25,11 +26,12 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
     public async Task AddQuoteAsync([ComplexParameter] QuoteAddRequest request)
     {
         var tagList = request.GetTags();
+        var (personName, personUserId) = ResolvePerson(request.Person);
         var document = new QuoteDocument
         {
-            Person = request.Author,
-            PersonKey = NormalizeAuthorKey(request.Author),
-            PersonUserId = ResolveAuthorId(request.Author),
+            Person = personName,
+            PersonKey = NormalizePersonKey(personName),
+            PersonUserId = personUserId,
             Message = request.Message,
             Tags = tagList.ToArray(),
             Nsfw = request.Nsfw,
@@ -45,9 +47,9 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
             Context.User.Id,
             document.GuildId,
             document.ChannelId,
-            request.Author,
+            document.Person,
             document.PersonUserId,
-            request.Message,
+            document.Message,
             tagList,
             request.Nsfw,
             document.ShortId);
@@ -57,48 +59,71 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
         var tagsSummary = tagList.Count > 0 ? string.Join(", ", tagList) : "No tags";
 
         await RespondAsync(
-            $"Quote {document.ShortId} from {request.Author} received! Tags: {tagsSummary} NSFW: {request.Nsfw}",
+            $"Quote {document.ShortId} from {document.Person} received! Tags: {tagsSummary} NSFW: {request.Nsfw}",
             ephemeral: true);
     }
 
-    private static string NormalizeAuthorKey(string author)
+    private static string NormalizePersonKey(string person)
     {
-        if (string.IsNullOrWhiteSpace(author))
+        if (string.IsNullOrWhiteSpace(person))
         {
             return "unknown";
         }
 
-        var normalized = author.Trim().ToLowerInvariant();
+        var normalized = person.Trim().ToLowerInvariant();
         normalized = Regex.Replace(normalized, "[^a-z0-9]+", "-");
         normalized = normalized.Trim('-');
 
         return string.IsNullOrWhiteSpace(normalized) ? "unknown" : normalized;
     }
 
-    private ulong? ResolveAuthorId(string author)
+    private (string Name, ulong? Id) ResolvePerson(string person)
     {
-        if (string.IsNullOrWhiteSpace(author))
+        if (string.IsNullOrWhiteSpace(person))
         {
-            return null;
+            return ("Unknown", null);
         }
 
-        if (MentionUtils.TryParseUser(author, out var mentionUserId))
+        var trimmedInput = person.Trim();
+
+        if (MentionUtils.TryParseUser(person, out var mentionUserId))
         {
-            return mentionUserId;
+            var user = GetGuildUser(mentionUserId) ?? Context.Client.GetUser(mentionUserId);
+            if (user is not null)
+            {
+                return (GetUserDisplayName(user), user.Id);
+            }
+
+            return (trimmedInput, mentionUserId);
         }
 
         var guild = Context.Guild;
         if (guild is null)
         {
-            return null;
+            return (trimmedInput, null);
         }
 
-        var trimmed = author.Trim();
-        var user = guild.Users.FirstOrDefault(u =>
-            string.Equals(u.DisplayName, trimmed, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(u.Username, trimmed, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals($"{u.Username}#{u.Discriminator}", trimmed, StringComparison.OrdinalIgnoreCase));
+        var guildUser = guild.Users.FirstOrDefault(u =>
+            string.Equals(u.DisplayName, trimmedInput, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(u.Username, trimmedInput, StringComparison.OrdinalIgnoreCase) ||
+            (u.GlobalName is not null &&
+             string.Equals(u.GlobalName, trimmedInput, StringComparison.OrdinalIgnoreCase)) ||
+            string.Equals($"{u.Username}#{u.Discriminator}", trimmedInput, StringComparison.OrdinalIgnoreCase));
 
-        return user?.Id;
+        if (guildUser is not null)
+        {
+            return (GetUserDisplayName(guildUser), guildUser.Id);
+        }
+
+        return (trimmedInput, null);
     }
+
+    private SocketGuildUser? GetGuildUser(ulong userId) => Context.Guild?.GetUser(userId);
+
+    private static string GetUserDisplayName(IUser user) =>
+        user switch
+        {
+            SocketGuildUser guildUser => guildUser.DisplayName,
+            _ => user.GlobalName ?? user.Username
+        };
 }

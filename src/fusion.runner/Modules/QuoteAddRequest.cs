@@ -1,17 +1,23 @@
+using Discord.Interactions;
+
 namespace Fusion.Runner.Modules;
 
-public sealed record class QuoteAddRequest
+[method: ComplexParameterCtor]
+public sealed class QuoteAddRequest([Summary("person", "The person who said the quote.")] string person,
+                       [Summary("quote", "The quote message.")] string message,
+                       [Summary("tags", "Comma-separated tags for the quote.")] string? tags = null,
+                       [Summary("nsfw", "Whether the quote is NSFW.")] bool nsfw = false)
 {
-    public string Author { get; init; } = string.Empty;
+    public string Person { get; init; } = person;
 
-    public string Message { get; init; } = string.Empty;
+    public string Message { get; init; } = message;
 
-    public string? Tags { get; init; }
+    public string? Tags { get; init; } = tags;
 
-    public bool Nsfw { get; init; }
+    public bool Nsfw { get; init; } = nsfw;
 
     public IReadOnlyList<string> GetTags() =>
-        string.IsNullOrWhiteSpace(Tags)
-            ? Array.Empty<string>()
-            : Tags.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+          string.IsNullOrWhiteSpace(Tags)
+              ? Array.Empty<string>()
+              : Tags.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 }

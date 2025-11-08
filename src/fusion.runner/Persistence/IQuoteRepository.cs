@@ -11,4 +11,9 @@ public interface IQuoteRepository
     Task<QuoteDocument?> GetByShortIdAsync(string shortId, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<QuoteDocument>> GetFuzzyShortIdAsync(string shortIdPrefix, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<QuoteDocument>> SearchAsync(
+        string query,
+        int limit = 5,
+        CancellationToken cancellationToken = default);
 }

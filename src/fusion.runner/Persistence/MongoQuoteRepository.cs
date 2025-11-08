@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -78,5 +79,26 @@ public sealed class MongoQuoteRepository : IQuoteRepository
         var filter = Builders<QuoteDocument>.Filter.Regex(q => q.ShortId, new BsonRegularExpression(pattern));
 
         return await _collection.Find(filter).ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<QuoteDocument>> SearchAsync(
+        string query,
+        int limit = 5,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return Array.Empty<QuoteDocument>();
+        }
+
+        var normalized = Regex.Escape(query.Trim());
+        var regex = new BsonRegularExpression(normalized, "i");
+
+        var messageFilter = Builders<QuoteDocument>.Filter.Regex(q => q.Message, regex);
+        var tagsFilter = Builders<QuoteDocument>.Filter.Regex("Tags", regex);
+        var filter = Builders<QuoteDocument>.Filter.Or(messageFilter, tagsFilter);
+
+        var limited = Math.Clamp(limit, 1, 25);
+        return await _collection.Find(filter).Limit(limited).ToListAsync(cancellationToken);
     }
 }

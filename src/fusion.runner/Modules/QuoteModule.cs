@@ -76,15 +76,56 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
         }
 
         var normalized = shortId.Trim().ToUpperInvariant();
-        var quotes = await _repository.GetFuzzyShortIdAsync(normalized);
+        var quote = await _repository.GetByShortIdAsync(normalized);
 
-        if (quotes.Count == 0)
+        if (quote is not null)
+        {
+            await RespondAsync(FormatQuoteResponse(quote));
+            return;
+        }
+
+        var fuzzyMatches = await _repository.GetFuzzyShortIdAsync(normalized);
+        if (fuzzyMatches.Count == 0)
         {
             await RespondAsync($"No quotes found matching id prefix `{normalized}`.", ephemeral: true);
             return;
         }
 
-        await RespondAsync(FormatQuoteResponse(quotes.First()));
+        var fallback = fuzzyMatches.First();
+        await RespondAsync(
+            $"Quote `{normalized}` not found. Showing closest match:`\n`" + FormatQuoteResponse(fallback));
+    }
+
+    [SlashCommand("search", "Search quote text and tags.")]
+    public async Task SearchQuotesAsync(
+        [Summary("query", "Text to search for inside stored quotes.")] string query,
+        [Summary("limit", "Maximum number of results (1-10)."), MinValue(1), MaxValue(10)] int limit = 5)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            await RespondAsync("Please provide text to search for.", ephemeral: true);
+            return;
+        }
+
+        var clampedLimit = Math.Clamp(limit, 1, 10);
+        var results = await _repository.SearchAsync(query, clampedLimit);
+
+        if (results.Count == 0)
+        {
+            await RespondAsync("No quotes matched that search.", ephemeral: true);
+            return;
+        }
+
+        var builder = new StringBuilder();
+        builder.AppendLine($"Showing {results.Count} result(s) for `" + query.Trim() + "`:");
+        builder.AppendLine();
+
+        foreach (var result in results)
+        {
+            builder.AppendLine($"`{result.ShortId}` **{result.Person}**: {Truncate(result.Message, 120)}");
+        }
+
+        await RespondAsync(builder.ToString(), ephemeral: true);
     }
 
     private IReadOnlyList<MentionedUser> ResolveMentionedUsers(string message)
@@ -156,6 +197,16 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
         }
 
         return builder.ToString();
+    }
+
+    private static string Truncate(string value, int maxLength)
+    {
+        if (string.IsNullOrEmpty(value) || value.Length <= maxLength)
+        {
+            return value;
+        }
+
+        return value[..maxLength] + "…";
     }
 
     private static string NormalizePersonKey(string person)

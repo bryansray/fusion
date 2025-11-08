@@ -76,6 +76,7 @@ try
             });
 
             services.AddSingleton<IQuoteRepository, MongoQuoteRepository>();
+            services.AddHostedService<MongoIndexInitializer>();
 
             services.AddSingleton<SlashCommandService>();
             services.AddHostedService<DiscordBotHostedService>();

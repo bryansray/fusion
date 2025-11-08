@@ -63,6 +63,43 @@ public sealed class RaiderIoClientTests
     }
 
     [Fact]
+    public async Task GetGuildAsyncReturnsProfile()
+    {
+        using var handler = new TestHttpMessageHandler()
+            .EnqueueJson(HttpStatusCode.OK, """
+            {
+              "name": "Echo",
+              "realm": "Tarren Mill",
+              "region": "eu",
+              "faction": "horde"
+            }
+            """);
+
+        using var httpClient = handler.CreateClient();
+        var client = CreateClient(httpClient);
+
+        var guild = await client.GetGuildAsync("Tarren Mill", "Echo");
+
+        Assert.NotNull(guild);
+        Assert.Equal("Echo", guild!.Name);
+        Assert.Equal("horde", guild.Faction);
+    }
+
+    [Fact]
+    public async Task GetGuildAsyncReturnsNullWhenNotFound()
+    {
+        using var handler = new TestHttpMessageHandler()
+            .Enqueue(() => new HttpResponseMessage(HttpStatusCode.NotFound));
+
+        using var httpClient = handler.CreateClient();
+        var client = CreateClient(httpClient);
+
+        var guild = await client.GetGuildAsync("us", "illidan", "unknown", null);
+
+        Assert.Null(guild);
+    }
+
+    [Fact]
     public async Task GetCharacterAsyncAddsApiKeyHeaderWhenConfigured()
     {
         using var handler = new RecordingHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)

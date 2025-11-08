@@ -28,3 +28,15 @@ Commands in this group call the `IRaiderIoClient` defined in `Fusion.Infrastruct
 - Allow `region` as an optional argument on the command.
 - Enrich responses with Discord embeds, linking to the Raider.IO profile page.
 - Add Raider.IO endpoints for guilds, Mythic+ runs, and raid progression.
+
+## `/raiderio guild <server> <guild>`
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `server`  | Yes      | Realm/server name or slug. |
+| `guild`   | Yes      | Guild name. |
+
+### Behavior
+- Uses the default Raider.IO region.
+- Retrieves guild metadata and raid progression, responding with an embed (faction, progression summary, direct Raider.IO link).
+- Failures/not-found cases reply with an ephemeral message and log the error for investigation.

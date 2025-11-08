@@ -78,6 +78,7 @@ You can override any value with environment variables (e.g., `Discord__Token`, `
 - `/quote delete <short-id>` & `/quote restore <short-id>` – soft-delete/restore quotes; restricted to members with `Manage Messages`/`Manage Server`/`Administrator`.
 - `/warcraft character <realm> <name>` – fetches a WoW character profile via the Blizzard API (defaults to the US region) and returns a summary.
 - `/raiderio character <server> <name>` – fetches Raider.IO stats (class, item level, Mythic+ ranks) for a character using the configured default region.
+- `/raiderio guild <server> <guild>` – fetches Raider.IO guild info (faction, raid progression) for the specified guild.
 
 Detailed command docs live under `docs/slash-commands/` (e.g., [`quote-system`](docs/slash-commands/quote-system.md), [`warcraft`](docs/slash-commands/warcraft.md), [`raiderio`](docs/slash-commands/raiderio.md)).
 

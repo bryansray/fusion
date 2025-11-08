@@ -35,6 +35,45 @@ public sealed record RaiderIoCharacterProfile
     public DateTimeOffset? LastCrawledAt { get; init; }
 }
 
+public sealed record RaiderIoGuildProfile
+{
+    [JsonPropertyName("name")]
+    public string Name { get; init; } = string.Empty;
+
+    [JsonPropertyName("realm")]
+    public string Realm { get; init; } = string.Empty;
+
+    [JsonPropertyName("region")]
+    public string Region { get; init; } = string.Empty;
+
+    [JsonPropertyName("faction")]
+    public string Faction { get; init; } = string.Empty;
+
+    [JsonPropertyName("raid_progression")]
+    public IReadOnlyDictionary<string, RaidProgression> RaidProgression { get; init; } = new Dictionary<string, RaidProgression>();
+
+    [JsonPropertyName("profile_url")]
+    public Uri? ProfileUrl { get; init; }
+}
+
+public sealed record RaidProgression
+{
+    [JsonPropertyName("summary")]
+    public string Summary { get; init; } = string.Empty;
+
+    [JsonPropertyName("total_bosses")]
+    public int TotalBosses { get; init; }
+
+    [JsonPropertyName("normal_bosses_killed")]
+    public int NormalBossesKilled { get; init; }
+
+    [JsonPropertyName("heroic_bosses_killed")]
+    public int HeroicBossesKilled { get; init; }
+
+    [JsonPropertyName("mythic_bosses_killed")]
+    public int MythicBossesKilled { get; init; }
+}
+
 public sealed record MythicPlusScoresBySeason
 {
     [JsonPropertyName("season")]

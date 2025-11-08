@@ -139,6 +139,31 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
         await RespondAsync(builder.ToString(), ephemeral: true);
     }
 
+    [SlashCommand("delete", "Soft delete a quote by its short id.")]
+    public async Task DeleteQuoteAsync([Summary("id", "The quote short id to delete.")] string shortId)
+    {
+        if (string.IsNullOrWhiteSpace(shortId))
+        {
+            await RespondAsync("Please provide the quote id you want to delete.", ephemeral: true);
+            return;
+        }
+
+        if (!HasQuoteModerationPermission())
+        {
+            await RespondAsync("You do not have permission to delete quotes.", ephemeral: true);
+            return;
+        }
+
+        var normalized = shortId.Trim().ToUpperInvariant();
+        var deleted = await _repository.SoftDeleteAsync(normalized, Context.User.Id);
+
+        var message = deleted
+            ? $"Quote `{normalized}` has been soft deleted."
+            : $"Quote `{normalized}` does not exist or was already deleted.";
+
+        await RespondAsync(message, ephemeral: true);
+    }
+
     private IReadOnlyList<MentionedUser> ResolveMentionedUsers(string message)
     {
         if (string.IsNullOrWhiteSpace(message))
@@ -218,6 +243,17 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
         }
 
         return value[..maxLength] + "…";
+    }
+
+    private bool HasQuoteModerationPermission()
+    {
+        if (Context.User is SocketGuildUser guildUser)
+        {
+            var permissions = guildUser.GuildPermissions;
+            return permissions.ManageMessages || permissions.ManageGuild || permissions.Administrator;
+        }
+
+        return false;
     }
 
     private static string NormalizePersonKey(string person)

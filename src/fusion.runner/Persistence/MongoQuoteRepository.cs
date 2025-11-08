@@ -54,14 +54,18 @@ public sealed class MongoQuoteRepository : IQuoteRepository
         string author,
         CancellationToken cancellationToken = default)
     {
-        var filter = Builders<QuoteDocument>.Filter.Eq(q => q.PersonKey, author);
+        var filter = Builders<QuoteDocument>.Filter.And(
+            Builders<QuoteDocument>.Filter.Eq(q => q.PersonKey, author),
+            Builders<QuoteDocument>.Filter.Eq(q => q.DeletedAt, null));
         return await _collection.Find(filter).ToListAsync(cancellationToken);
     }
 
     public async Task<QuoteDocument?> GetByShortIdAsync(string shortId, CancellationToken cancellationToken = default)
     {
         var normalized = shortId.Trim().ToUpperInvariant();
-        var filter = Builders<QuoteDocument>.Filter.Eq(q => q.ShortId, normalized);
+        var filter = Builders<QuoteDocument>.Filter.And(
+            Builders<QuoteDocument>.Filter.Eq(q => q.ShortId, normalized),
+            Builders<QuoteDocument>.Filter.Eq(q => q.DeletedAt, null));
         return await _collection.Find(filter).FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -76,7 +80,9 @@ public sealed class MongoQuoteRepository : IQuoteRepository
 
         var normalized = shortIdPrefix.Trim().ToUpperInvariant();
         var pattern = $"^{Regex.Escape(normalized)}";
-        var filter = Builders<QuoteDocument>.Filter.Regex(q => q.ShortId, new BsonRegularExpression(pattern));
+        var filter = Builders<QuoteDocument>.Filter.And(
+            Builders<QuoteDocument>.Filter.Regex(q => q.ShortId, new BsonRegularExpression(pattern)),
+            Builders<QuoteDocument>.Filter.Eq(q => q.DeletedAt, null));
 
         return await _collection.Find(filter).ToListAsync(cancellationToken);
     }
@@ -96,7 +102,9 @@ public sealed class MongoQuoteRepository : IQuoteRepository
 
         var messageFilter = Builders<QuoteDocument>.Filter.Regex(q => q.Message, regex);
         var tagsFilter = Builders<QuoteDocument>.Filter.Regex("Tags", regex);
-        var filter = Builders<QuoteDocument>.Filter.Or(messageFilter, tagsFilter);
+        var filter = Builders<QuoteDocument>.Filter.And(
+            Builders<QuoteDocument>.Filter.Or(messageFilter, tagsFilter),
+            Builders<QuoteDocument>.Filter.Eq(q => q.DeletedAt, null));
 
         var limited = Math.Clamp(limit, 1, 25);
         return await _collection.Find(filter).Limit(limited).ToListAsync(cancellationToken);
@@ -114,5 +122,25 @@ public sealed class MongoQuoteRepository : IQuoteRepository
         var update = Builders<QuoteDocument>.Update.Inc(q => q.Uses, 1);
 
         await _collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+    }
+
+    public async Task<bool> SoftDeleteAsync(string shortId, ulong deletedBy, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(shortId))
+        {
+            return false;
+        }
+
+        var normalized = shortId.Trim().ToUpperInvariant();
+        var filter = Builders<QuoteDocument>.Filter.And(
+            Builders<QuoteDocument>.Filter.Eq(q => q.ShortId, normalized),
+            Builders<QuoteDocument>.Filter.Eq(q => q.DeletedAt, null));
+
+        var update = Builders<QuoteDocument>.Update
+            .Set(q => q.DeletedAt, DateTimeOffset.UtcNow)
+            .Set(q => q.DeletedBy, deletedBy);
+
+        var result = await _collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+        return result.ModifiedCount > 0;
     }
 }

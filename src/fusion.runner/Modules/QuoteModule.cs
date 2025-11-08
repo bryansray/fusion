@@ -164,6 +164,31 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
         await RespondAsync(message, ephemeral: true);
     }
 
+    [SlashCommand("restore", "Restore a previously deleted quote.")]
+    public async Task RestoreQuoteAsync([Summary("id", "The quote short id to restore.")] string shortId)
+    {
+        if (string.IsNullOrWhiteSpace(shortId))
+        {
+            await RespondAsync("Please provide the quote id you want to restore.", ephemeral: true);
+            return;
+        }
+
+        if (!HasQuoteModerationPermission())
+        {
+            await RespondAsync("You do not have permission to restore quotes.", ephemeral: true);
+            return;
+        }
+
+        var normalized = shortId.Trim().ToUpperInvariant();
+        var restored = await _repository.RestoreAsync(normalized, Context.User.Id);
+
+        var message = restored
+            ? $"Quote `{normalized}` has been restored."
+            : $"Quote `{normalized}` does not exist or is not deleted.";
+
+        await RespondAsync(message, ephemeral: true);
+    }
+
     private IReadOnlyList<MentionedUser> ResolveMentionedUsers(string message)
     {
         if (string.IsNullOrWhiteSpace(message))

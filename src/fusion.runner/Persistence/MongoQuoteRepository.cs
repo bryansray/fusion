@@ -143,4 +143,24 @@ public sealed class MongoQuoteRepository : IQuoteRepository
         var result = await _collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
         return result.ModifiedCount > 0;
     }
+
+    public async Task<bool> RestoreAsync(string shortId, ulong restoredBy, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(shortId))
+        {
+            return false;
+        }
+
+        var normalized = shortId.Trim().ToUpperInvariant();
+        var filter = Builders<QuoteDocument>.Filter.And(
+            Builders<QuoteDocument>.Filter.Eq(q => q.ShortId, normalized),
+            Builders<QuoteDocument>.Filter.Ne(q => q.DeletedAt, null));
+
+        var update = Builders<QuoteDocument>.Update
+            .Set(q => q.DeletedAt, null)
+            .Set(q => q.DeletedBy, null);
+
+        var result = await _collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+        return result.ModifiedCount > 0;
+    }
 }

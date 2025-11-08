@@ -1,7 +1,7 @@
 - [x] Harden quote retrieval (increment `Uses` on lookups, add atomic repository method)
 - [ ] Add quote moderation commands
   - [x] `/quote delete` (soft delete, permissions enforced)
-  - [ ] `/quote restore`
+  - [x] `/quote restore`
   - [ ] Role-based configuration/perms (beyond initial ManageMessages check)
   - [x] Hide deleted quotes in lookups/search
 - [ ] Create MongoDB indexes for quote queries (`ShortId`, `PersonKey`, `Tags`, soft-delete compound index)

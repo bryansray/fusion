@@ -80,6 +80,7 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
 
         if (quote is not null)
         {
+            await _repository.IncrementUsesAsync(quote.ShortId);
             await RespondAsync(FormatQuoteResponse(quote));
             return;
         }
@@ -92,6 +93,7 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
         }
 
         var fallback = fuzzyMatches.First();
+        await _repository.IncrementUsesAsync(fallback.ShortId);
         await RespondAsync(
             $"Quote `{normalized}` not found. Showing closest match:`\n`" + FormatQuoteResponse(fallback));
     }
@@ -123,6 +125,11 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
         foreach (var result in results)
         {
             builder.AppendLine($"`{result.ShortId}` **{result.Person}**: {Truncate(result.Message, 120)}");
+        }
+
+        foreach (var result in results)
+        {
+            await _repository.IncrementUsesAsync(result.ShortId);
         }
 
         await RespondAsync(builder.ToString(), ephemeral: true);

@@ -16,4 +16,6 @@ public interface IQuoteRepository
         string query,
         int limit = 5,
         CancellationToken cancellationToken = default);
+
+    Task IncrementUsesAsync(string shortId, CancellationToken cancellationToken = default);
 }

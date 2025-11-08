@@ -101,4 +101,18 @@ public sealed class MongoQuoteRepository : IQuoteRepository
         var limited = Math.Clamp(limit, 1, 25);
         return await _collection.Find(filter).Limit(limited).ToListAsync(cancellationToken);
     }
+
+    public async Task IncrementUsesAsync(string shortId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(shortId))
+        {
+            return;
+        }
+
+        var normalized = shortId.Trim().ToUpperInvariant();
+        var filter = Builders<QuoteDocument>.Filter.Eq(q => q.ShortId, normalized);
+        var update = Builders<QuoteDocument>.Update.Inc(q => q.Uses, 1);
+
+        await _collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+    }
 }

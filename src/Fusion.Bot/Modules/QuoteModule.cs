@@ -260,7 +260,7 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
         return builder.ToString();
     }
 
-    private static string Truncate(string value, int maxLength)
+    internal static string Truncate(string value, int maxLength)
     {
         if (string.IsNullOrEmpty(value) || value.Length <= maxLength)
         {
@@ -281,7 +281,7 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
         return false;
     }
 
-    private static string NormalizePersonKey(string person)
+    internal static string NormalizePersonKey(string person)
     {
         if (string.IsNullOrWhiteSpace(person))
         {

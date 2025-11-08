@@ -1,4 +1,4 @@
-- [ ] Harden quote retrieval (increment `Uses` on lookups, add atomic repository method)
+- [x] Harden quote retrieval (increment `Uses` on lookups, add atomic repository method)
 - [ ] Add quote moderation commands (`/quote delete`, `/quote restore`, role-based permissions, hide deleted in search by default)
 - [ ] Create MongoDB indexes for quote queries (`ShortId`, `PersonKey`, `Tags`, soft-delete compound index)
 - [ ] Improve UX with embeds and buttons for `/quote find` (display tags, mentions, like/resurface actions)

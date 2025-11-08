@@ -77,25 +77,29 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
 
         var normalized = shortId.Trim().ToUpperInvariant();
         var quote = await _repository.GetByShortIdAsync(normalized);
+        string response;
 
         if (quote is not null)
         {
             await _repository.IncrementUsesAsync(quote.ShortId);
-            await RespondAsync(FormatQuoteResponse(quote));
-            return;
+            response = FormatQuoteResponse(quote);
         }
-
-        var fuzzyMatches = await _repository.GetFuzzyShortIdAsync(normalized);
-        if (fuzzyMatches.Count == 0)
+        else
         {
-            await RespondAsync($"No quotes found matching id prefix `{normalized}`.", ephemeral: true);
-            return;
+            var fuzzyMatches = await _repository.GetFuzzyShortIdAsync(normalized);
+            if (fuzzyMatches.Count == 0)
+            {
+                response = $"No quotes found matching id prefix `{normalized}`.";
+            }
+            else
+            {
+                var fallback = fuzzyMatches.First();
+                await _repository.IncrementUsesAsync(fallback.ShortId);
+                response = $"Quote `{normalized}` not found. Showing closest match:`\n`" + FormatQuoteResponse(fallback);
+            }
         }
 
-        var fallback = fuzzyMatches.First();
-        await _repository.IncrementUsesAsync(fallback.ShortId);
-        await RespondAsync(
-            $"Quote `{normalized}` not found. Showing closest match:`\n`" + FormatQuoteResponse(fallback));
+        await RespondAsync(response, ephemeral: false);
     }
 
     [SlashCommand("search", "Search quote text and tags.")]

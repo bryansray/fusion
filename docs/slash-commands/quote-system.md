@@ -17,6 +17,8 @@ Response: ephemeral acknowledgment with generated short ID.
 ## `/quote find <short-id>`
 Fetch a single quote by its short identifier. Fuzzy fallback will pick the closest match if the exact ID is missing. Increments the `Uses` counter on every successful fetch.
 
+**UI:** Returns a rich embed showing the quote, tags, mentions, stats, and includes buttons to share the quote to the channel or copy the short ID for later use.
+
 ## `/quote search <query> [limit]`
 Regex-style search across quote text and tags. `limit` defaults to 5 (max 10). Returns an ephemeral list summarizing each hit and increments `Uses` afterward.
 

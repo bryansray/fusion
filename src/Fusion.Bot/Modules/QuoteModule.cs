@@ -77,29 +77,27 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
 
         var normalized = shortId.Trim().ToUpperInvariant();
         var quote = await _repository.GetByShortIdAsync(normalized).ConfigureAwait(false);
-        string response;
 
         if (quote is not null)
         {
             await _repository.IncrementUsesAsync(quote.ShortId).ConfigureAwait(false);
-            response = FormatQuoteResponse(quote);
-        }
-        else
-        {
-            var fuzzyMatches = await _repository.GetFuzzyShortIdAsync(normalized).ConfigureAwait(false);
-            if (fuzzyMatches.Count == 0)
-            {
-                response = $"No quotes found matching id prefix `{normalized}`.";
-            }
-            else
-            {
-                var fallback = fuzzyMatches[0];
-                await _repository.IncrementUsesAsync(fallback.ShortId).ConfigureAwait(false);
-                response = $"Quote `{normalized}` not found. Showing closest match:`\n`" + FormatQuoteResponse(fallback);
-            }
+            await RespondWithQuoteAsync(quote, null, ephemeral: false).ConfigureAwait(false);
+            return;
         }
 
-        await RespondAsync(response, ephemeral: false).ConfigureAwait(false);
+        var fuzzyMatches = await _repository.GetFuzzyShortIdAsync(normalized).ConfigureAwait(false);
+        if (fuzzyMatches.Count == 0)
+        {
+            await RespondAsync($"No quotes found matching id prefix `{normalized}`.", ephemeral: true).ConfigureAwait(false);
+            return;
+        }
+
+        var fallback = fuzzyMatches[0];
+        await _repository.IncrementUsesAsync(fallback.ShortId).ConfigureAwait(false);
+        await RespondWithQuoteAsync(
+            fallback,
+            $"Quote `{normalized}` not found. Showing closest match:",
+            ephemeral: false).ConfigureAwait(false);
     }
 
     [SlashCommand("search", "Search quote text and tags.")]
@@ -232,32 +230,57 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
             .ToArray();
     }
 
-    private static string FormatQuoteResponse(QuoteDocument quote)
+    private async Task RespondWithQuoteAsync(QuoteDocument quote, string? message, bool ephemeral)
     {
-        var builder = new StringBuilder();
-        builder.AppendLine($"**{quote.Person}** said:");
-        builder.AppendLine($"> {quote.Message}");
-        builder.AppendLine();
+        var embed = BuildQuoteEmbed(quote);
+        var components = BuildQuoteComponents(quote).Build();
 
-        builder.AppendLine($"Short Id: `{quote.ShortId}` | NSFW: {(quote.Nsfw ? "Yes" : "No")}");
-        builder.AppendLine($"Added by: <@{quote.AddedBy}> on {quote.AddedAt:yyyy-MM-dd HH:mm} UTC");
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            await RespondAsync(embed: embed, components: components, ephemeral: ephemeral).ConfigureAwait(false);
+        }
+        else
+        {
+            await RespondAsync(message, embed: embed, components: components, ephemeral: ephemeral).ConfigureAwait(false);
+        }
+    }
 
+    private static Embed BuildQuoteEmbed(QuoteDocument quote)
+    {
         var tags = quote.Tags.Count > 0 ? string.Join(", ", quote.Tags) : "None";
-        builder.AppendLine($"Tags: {tags}");
-
         var mentions = quote.MentionedUsers.Count > 0
             ? string.Join(", ", quote.MentionedUsers.Select(m => $"<@{m.UserId}> ({m.DisplayName})"))
             : "None";
-        builder.AppendLine($"Mentions: {mentions}");
 
-        builder.AppendLine($"Uses: {quote.Uses} | Likes: {quote.Likes}");
+        var embed = new EmbedBuilder()
+            .WithTitle(quote.Person)
+            .WithDescription($"> {quote.Message}")
+            .WithColor(quote.Nsfw ? Color.DarkRed : Color.DarkGrey)
+            .AddField("Short Id", $"`{quote.ShortId}`", inline: true)
+            .AddField("NSFW", quote.Nsfw ? "Yes" : "No", inline: true)
+            .AddField("Tags", tags, inline: false)
+            .AddField("Mentions", mentions, inline: false)
+            .AddField("Stats", $"Uses: {quote.Uses}\nLikes: {quote.Likes}", inline: true)
+            .WithFooter($"Added by <@{quote.AddedBy}> on {quote.AddedAt:yyyy-MM-dd HH:mm} UTC");
+
+        if (quote.PersonUserId is not null)
+        {
+            embed.WithAuthor(quote.Person, iconUrl: null, url: null);
+        }
 
         if (quote.DeletedAt is not null)
         {
-            builder.AppendLine($"Deleted: {quote.DeletedAt:yyyy-MM-dd HH:mm} UTC by <@{quote.DeletedBy}>");
+            embed.AddField("Deleted", $"{quote.DeletedAt:yyyy-MM-dd HH:mm} UTC by <@{quote.DeletedBy}>", inline: false);
         }
 
-        return builder.ToString();
+        return embed.Build();
+    }
+
+    private static ComponentBuilder BuildQuoteComponents(QuoteDocument quote)
+    {
+        return new ComponentBuilder()
+            .WithButton("Share Quote", $"quote-share:{quote.ShortId}", ButtonStyle.Primary)
+            .WithButton("Copy ID", $"quote-copy:{quote.ShortId}", ButtonStyle.Secondary);
     }
 
     internal static string Truncate(string value, int maxLength)
@@ -346,4 +369,28 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
             SocketGuildUser guildUser => guildUser.DisplayName,
             _ => user.GlobalName ?? user.Username
         };
+
+    [ComponentInteraction("quote-share:*")]
+    public async Task HandleQuoteShareAsync(string shortId)
+    {
+        var normalized = shortId.Trim().ToUpperInvariant();
+        var quote = await _repository.GetByShortIdAsync(normalized).ConfigureAwait(false);
+        if (quote is null)
+        {
+            await RespondAsync($"Quote `{normalized}` could not be found.", ephemeral: true).ConfigureAwait(false);
+            return;
+        }
+
+        await _repository.IncrementUsesAsync(quote.ShortId).ConfigureAwait(false);
+        var embed = BuildQuoteEmbed(quote);
+        var components = BuildQuoteComponents(quote).Build();
+        await RespondAsync(embed: embed, components: components, ephemeral: false).ConfigureAwait(false);
+    }
+
+    [ComponentInteraction("quote-copy:*")]
+    public async Task HandleQuoteCopyAsync(string shortId)
+    {
+        var normalized = shortId.Trim().ToUpperInvariant();
+        await RespondAsync($"Short Id: `{normalized}`", ephemeral: true).ConfigureAwait(false);
+    }
 }

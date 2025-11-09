@@ -19,6 +19,8 @@ public interface IQuoteRepository
 
     Task IncrementUsesAsync(string shortId, CancellationToken cancellationToken = default);
 
+    Task<int?> IncrementLikesAsync(string shortId, CancellationToken cancellationToken = default);
+
     Task<bool> SoftDeleteAsync(string shortId, ulong deletedBy, CancellationToken cancellationToken = default);
 
     Task<bool> RestoreAsync(string shortId, ulong restoredBy, CancellationToken cancellationToken = default);

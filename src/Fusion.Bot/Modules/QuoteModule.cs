@@ -280,7 +280,8 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
     {
         return new ComponentBuilder()
             .WithButton("Share Quote", $"quote-share:{quote.ShortId}", ButtonStyle.Primary)
-            .WithButton("Copy ID", $"quote-copy:{quote.ShortId}", ButtonStyle.Secondary);
+            .WithButton("Copy ID", $"quote-copy:{quote.ShortId}", ButtonStyle.Secondary)
+            .WithButton($"Like ({quote.Likes})", $"quote-like:{quote.ShortId}", ButtonStyle.Success);
     }
 
     internal static string Truncate(string value, int maxLength)
@@ -370,7 +371,7 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
             _ => user.GlobalName ?? user.Username
         };
 
-    [ComponentInteraction("quote-share:*")]
+    [ComponentInteraction("quote-share:*", true)]
     public async Task HandleQuoteShareAsync(string shortId)
     {
         var normalized = shortId.Trim().ToUpperInvariant();
@@ -387,10 +388,24 @@ public sealed class QuoteModule : InteractionModuleBase<SocketInteractionContext
         await RespondAsync(embed: embed, components: components, ephemeral: false).ConfigureAwait(false);
     }
 
-    [ComponentInteraction("quote-copy:*")]
+    [ComponentInteraction("quote-copy:*", true)]
     public async Task HandleQuoteCopyAsync(string shortId)
     {
         var normalized = shortId.Trim().ToUpperInvariant();
         await RespondAsync($"Short Id: `{normalized}`", ephemeral: true).ConfigureAwait(false);
+    }
+
+    [ComponentInteraction("quote-like:*", true)]
+    public async Task HandleQuoteLikeAsync(string shortId)
+    {
+        var normalized = shortId.Trim().ToUpperInvariant();
+        var newLikes = await _repository.IncrementLikesAsync(normalized).ConfigureAwait(false);
+        if (newLikes is null)
+        {
+            await RespondAsync($"Quote `{normalized}` could not be found.", ephemeral: true).ConfigureAwait(false);
+            return;
+        }
+
+        await RespondAsync($"Quote `{normalized}` now has {newLikes} like(s)! 💚", ephemeral: true).ConfigureAwait(false);
     }
 }

@@ -128,6 +128,30 @@ public sealed class MongoQuoteRepository : IQuoteRepository
         await _collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<int?> IncrementLikesAsync(string shortId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(shortId))
+        {
+            return null;
+        }
+
+        var normalized = shortId.Trim().ToUpperInvariant();
+        var filter = Builders<QuoteDocument>.Filter.And(
+            Builders<QuoteDocument>.Filter.Eq(q => q.ShortId, normalized),
+            Builders<QuoteDocument>.Filter.Eq(q => q.DeletedAt, null));
+
+        var update = Builders<QuoteDocument>.Update
+            .Inc(q => q.Likes, 1);
+
+        var options = new FindOneAndUpdateOptions<QuoteDocument>
+        {
+            ReturnDocument = ReturnDocument.After
+        };
+
+        var updated = await _collection.FindOneAndUpdateAsync(filter, update, options, cancellationToken).ConfigureAwait(false);
+        return updated?.Likes;
+    }
+
     public async Task<bool> SoftDeleteAsync(string shortId, ulong deletedBy, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(shortId))
